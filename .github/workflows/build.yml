@@ -22,35 +22,31 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Accept Android Licenses
-        run: |
-          yes | sdkmanager --licenses || true
-
       - name: Build Accessible Reader
         run: |
-          # 1. Initialize template project
-          flutter create --no-interactive --org com.accessiblereader --project-name accessible_reader app
+          # 1. Create clean app template
+          flutter create --org com.accessiblereader --project-name accessible_reader app
           cd app
 
           # 2. Add dependencies
           flutter pub add flutter_tts image_picker google_mlkit_text_recognition share_plus path_provider
 
-          # 3. Add Android permissions to AndroidManifest
+          # 3. Add Android permissions
           sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>' android/app/src/main/AndroidManifest.xml
 
-          # 4. Patch minSdk directly in build files
+          # 4. Enforce minSdkVersion 21 for ML Kit
           find android -type f \( -name "build.gradle" -o -name "build.gradle.kts" \) -exec sed -i 's/minSdkVersion = .*/minSdkVersion = 21/g' {} +
           find android -type f \( -name "build.gradle" -o -name "build.gradle.kts" \) -exec sed -i 's/minSdk = .*/minSdk = 21/g' {} +
 
-          # 5. Overwrite with your custom reader code
+          # 5. Copy custom app code
           if [ -f ../main.dart ]; then
             cp ../main.dart lib/main.dart
           fi
 
-          # 6. Build APK in non-interactive mode
-          flutter build apk --release --no-interactive --no-tree-shake-icons
+          # 6. Build release APK
+          flutter build apk --release --no-tree-shake-icons
 
-      - name: Upload APK Artifact
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
