@@ -22,24 +22,24 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Build Accessible Reader
+      - name: Build Accessible Reader APK
         run: |
-          # 1. Generate clean Flutter project
+          # 1. Generate clean project with developer prefix
           flutter create --org com.saifulla --project-name accessible_reader app
           cd app
 
           # 2. Add dependencies
           flutter pub add flutter_tts image_picker google_mlkit_text_recognition share_plus path_provider
 
-          # 3. Add Android permissions
+          # 3. Add Android permissions to Manifest
           sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>' android/app/src/main/AndroidManifest.xml
 
-          # 4. Configure SDK versions and disable crashing R8 shrinker
+          # 4. Enforce SDK compatibility for ML Kit
           find android -type f \( -name "build.gradle*" \) -exec sed -i 's/flutter.minSdkVersion/21/g' {} +
           find android -type f \( -name "build.gradle*" \) -exec sed -i 's/flutter.compileSdkVersion/34/g' {} +
           find android -type f \( -name "build.gradle*" \) -exec sed -i 's/flutter.targetSdkVersion/34/g' {} +
 
-          # 5. Copy custom app code
+          # 5. Overwrite with app source code
           if [ -f ../main.dart ]; then
             cp ../main.dart lib/main.dart
           fi
