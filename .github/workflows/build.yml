@@ -24,33 +24,43 @@ jobs:
 
       - name: Build Accessible Reader APK
         run: |
-          set -e
-          echo "=== 1. Creating Accessible Reader Flutter App ==="
+          # 1. Initialize project
           flutter create --org com.saifulla --project-name accessible_reader app
           cd app
 
-          echo "=== 2. Adding Required Packages ==="
+          # 2. Add dependencies
           flutter pub add flutter_tts image_picker google_mlkit_text_recognition share_plus path_provider
 
-          echo "=== 3. Adding Permissions to AndroidManifest ==="
+          # 3. Add Android permissions
           sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>' android/app/src/main/AndroidManifest.xml
 
-          echo "=== 4. Setting Android SDK compatibility ==="
-          # Support both Groovy (.gradle) and Kotlin (.gradle.kts)
-          find android -type f -name "*build.gradle*" -exec sed -i 's/minSdk = .*/minSdk = 21/g' {} +
-          find android -type f -name "*build.gradle*" -exec sed -i 's/compileSdk = .*/compileSdk = 34/g' {} +
-          find android -type f -name "*build.gradle*" -exec sed -i 's/targetSdk = .*/targetSdk = 34/g' {} +
-          find android -type f -name "*build.gradle*" -exec sed -i 's/minSdkVersion .*/minSdkVersion 21/g' {} +
-          find android -type f -name "*build.gradle*" -exec sed -i 's/compileSdkVersion .*/compileSdkVersion 34/g' {} +
+          # 4. Safe Gradle configuration: Set minSdk 21 and compileSdk 34 cleanly
+          python3 - << 'EOF'
+          import os, re
+          for root, _, files in os.walk('android'):
+              for f in files:
+                  if f.startswith('build.gradle'):
+                      path = os.path.join(root, f)
+                      with open(path, 'r') as fp:
+                          content = fp.read()
+                      content = re.sub(r'minSdk(Version)?\s*=?\s*(\S+)', r'minSdk = 21' if '.kts' in f else r'minSdkVersion 21', content)
+                      content = re.sub(r'compileSdk(Version)?\s*=?\s*(\S+)', r'compileSdk = 34' if '.kts' in f else r'compileSdkVersion 34', content)
+                      content = re.sub(r'targetSdk(Version)?\s*=?\s*(\S+)', r'targetSdk = 34' if '.kts' in f else r'targetSdkVersion 34', content)
+                      with open(path, 'w') as fp:
+                          fp.write(content)
+          EOF
 
-          echo "=== 5. Copying Main Dart Source ==="
+          # 5. Copy custom app code
           if [ -f ../main.dart ]; then
             cp ../main.dart lib/main.dart
           fi
 
-          echo "=== 6. Building APK ==="
-          # Debug build guarantees 0% R8 shrinking crashes and installs immediately
-          flutter build apk --debug
+          # 6. Build debug APK and log everything to file
+          flutter build apk --debug -v > ../build-error-log.txt 2>&1 || {
+            echo "BUILD COMPLETED WITH ERROR"
+            tail -n 100 ../build-error-log.txt
+            exit 1
+          }
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -58,4 +68,11 @@ jobs:
         with:
           name: accessible-reader-apk
           path: app/build/app/outputs/flutter-apk/*.apk
+
+      - name: Upload Build Log Text
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-error-log
+          path: build-error-log.txt
           
