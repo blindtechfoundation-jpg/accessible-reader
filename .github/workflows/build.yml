@@ -24,27 +24,32 @@ jobs:
 
       - name: Build Accessible Reader APK
         run: |
-          # 1. Initialize project with developer org identifier
+          set -e
+          echo "=== 1. Creating Accessible Reader Flutter App ==="
           flutter create --org com.saifulla --project-name accessible_reader app
           cd app
 
-          # 2. Add dependencies
+          echo "=== 2. Adding Required Packages ==="
           flutter pub add flutter_tts image_picker google_mlkit_text_recognition share_plus path_provider
 
-          # 3. Add Android permissions to Manifest
+          echo "=== 3. Adding Permissions to AndroidManifest ==="
           sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>' android/app/src/main/AndroidManifest.xml
 
-          # 4. Set required SDK levels for ML Kit
-          find android -type f \( -name "build.gradle*" \) -exec sed -i 's/flutter.minSdkVersion/21/g' {} +
-          find android -type f \( -name "build.gradle*" \) -exec sed -i 's/flutter.compileSdkVersion/34/g' {} +
-          find android -type f \( -name "build.gradle*" \) -exec sed -i 's/flutter.targetSdkVersion/34/g' {} +
+          echo "=== 4. Setting Android SDK compatibility ==="
+          # Support both Groovy (.gradle) and Kotlin (.gradle.kts)
+          find android -type f -name "*build.gradle*" -exec sed -i 's/minSdk = .*/minSdk = 21/g' {} +
+          find android -type f -name "*build.gradle*" -exec sed -i 's/compileSdk = .*/compileSdk = 34/g' {} +
+          find android -type f -name "*build.gradle*" -exec sed -i 's/targetSdk = .*/targetSdk = 34/g' {} +
+          find android -type f -name "*build.gradle*" -exec sed -i 's/minSdkVersion .*/minSdkVersion 21/g' {} +
+          find android -type f -name "*build.gradle*" -exec sed -i 's/compileSdkVersion .*/compileSdkVersion 34/g' {} +
 
-          # 5. Copy custom app code
+          echo "=== 5. Copying Main Dart Source ==="
           if [ -f ../main.dart ]; then
             cp ../main.dart lib/main.dart
           fi
 
-          # 6. Build installable APK (debug build bypasses crashing R8 shrinker)
+          echo "=== 6. Building APK ==="
+          # Debug build guarantees 0% R8 shrinking crashes and installs immediately
           flutter build apk --debug
 
       - name: Upload APK
