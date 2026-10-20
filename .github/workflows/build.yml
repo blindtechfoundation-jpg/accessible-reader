@@ -24,7 +24,7 @@ jobs:
 
       - name: Build Accessible Reader APK
         run: |
-          # 1. Generate clean project with developer prefix
+          # 1. Initialize project with developer org identifier
           flutter create --org com.saifulla --project-name accessible_reader app
           cd app
 
@@ -34,20 +34,20 @@ jobs:
           # 3. Add Android permissions to Manifest
           sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>' android/app/src/main/AndroidManifest.xml
 
-          # 4. Enforce SDK compatibility for ML Kit
+          # 4. Set required SDK levels for ML Kit
           find android -type f \( -name "build.gradle*" \) -exec sed -i 's/flutter.minSdkVersion/21/g' {} +
           find android -type f \( -name "build.gradle*" \) -exec sed -i 's/flutter.compileSdkVersion/34/g' {} +
           find android -type f \( -name "build.gradle*" \) -exec sed -i 's/flutter.targetSdkVersion/34/g' {} +
 
-          # 5. Overwrite with app source code
+          # 5. Copy custom app code
           if [ -f ../main.dart ]; then
             cp ../main.dart lib/main.dart
           fi
 
-          # 6. Build APK
-          flutter build apk --release --no-tree-shake-icons
+          # 6. Build installable APK (debug build bypasses crashing R8 shrinker)
+          flutter build apk --debug
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
