@@ -22,28 +22,32 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create App Structure
+      - name: Create Flutter Project & Add Plugins
         run: |
           flutter create --org com.accessiblereader --project-name accessible_reader app
           cd app
           flutter pub add flutter_tts image_picker google_mlkit_text_recognition share_plus path_provider
 
-      - name: Configure Android Permissions and SDK
+      - name: Configure Android SDK and Permissions
         run: |
-          # Inject Camera and Storage permissions
+          # Raise minSdkVersion to 21 for ML Kit compatibility
+          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' app/android/app/build.gradle || true
+          sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 21/g' app/android/app/build.gradle || true
+
+          # Inject Camera and Storage permissions into AndroidManifest.xml
           sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>' app/android/app/src/main/AndroidManifest.xml
-          
-          # Copy custom code
+
+          # Replace default main.dart with custom accessible reader code
           if [ -f main.dart ]; then
             cp main.dart app/lib/main.dart
           fi
 
-      - name: Build Release APK
+      - name: Compile Release APK
         run: |
           cd app
           flutter build apk --release --no-tree-shake-icons
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: accessible-reader-apk
