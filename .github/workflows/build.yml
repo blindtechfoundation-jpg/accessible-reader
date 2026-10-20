@@ -22,33 +22,35 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create Project
+      - name: Accept Android Licenses
         run: |
-          flutter create --org com.accessiblereader --project-name accessible_reader app
+          yes | sdkmanager --licenses || true
+
+      - name: Build Accessible Reader
+        run: |
+          # 1. Initialize template project
+          flutter create --no-interactive --org com.accessiblereader --project-name accessible_reader app
           cd app
+
+          # 2. Add dependencies
           flutter pub add flutter_tts image_picker google_mlkit_text_recognition share_plus path_provider
 
-      - name: Configure Android
-        run: |
-          # Ensure minSdk is 21 for ML Kit compatibility
-          sed -i 's/minSdkVersion = .*/minSdkVersion = 21/g' app/android/app/build.gradle* || true
-          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' app/android/app/build.gradle* || true
-          sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 21/g' app/android/app/build.gradle* || true
+          # 3. Add Android permissions to AndroidManifest
+          sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>' android/app/src/main/AndroidManifest.xml
 
-          # Add Camera and Storage permissions
-          sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>' app/android/app/src/main/AndroidManifest.xml
+          # 4. Patch minSdk directly in build files
+          find android -type f \( -name "build.gradle" -o -name "build.gradle.kts" \) -exec sed -i 's/minSdkVersion = .*/minSdkVersion = 21/g' {} +
+          find android -type f \( -name "build.gradle" -o -name "build.gradle.kts" \) -exec sed -i 's/minSdk = .*/minSdk = 21/g' {} +
 
-          # Copy main code
-          if [ -f main.dart ]; then
-            cp main.dart app/lib/main.dart
+          # 5. Overwrite with your custom reader code
+          if [ -f ../main.dart ]; then
+            cp ../main.dart lib/main.dart
           fi
 
-      - name: Build APK
-        run: |
-          cd app
-          flutter build apk --release
+          # 6. Build APK in non-interactive mode
+          flutter build apk --release --no-interactive --no-tree-shake-icons
 
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         if: always()
         with:
