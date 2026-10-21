@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accessible AI Reading & OCR Hub</title>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  </script>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --accent-color: #ffc107;
+      --text-color: #ffffff;
+      --border-color: #333333;
+    }
+    body {
+      margin: 0;
+      padding: 16px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--accent-color);
+      padding-bottom: 10px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      color: var(--accent-color);
+    }
+    .author-tag {
+      font-size: 1rem;
+      color: #aaa;
+      margin-top: 4px;
+    }
+    .author-tag strong {
+      color: var(--accent-color);
+    }
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    button, label.file-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      border: 2px solid var(--accent-color);
+      padding: 14px 10px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+    }
+    button:active, label.file-btn:active {
+      background-color: var(--accent-color);
+      color: #000;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    .speed-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card-bg);
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    select {
+      background: #000;
+      color: var(--accent-color);
+      border: 1px solid var(--accent-color);
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    #status {
+      text-align: center;
+      font-size: 1rem;
+      color: var(--accent-color);
+      margin-bottom: 10px;
+      min-height: 24px;
+      font-weight: bold;
+    }
+    textarea {
+      width: 100%;
+      height: 320px;
+      box-sizing: border-box;
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 1.2rem;
+      line-height: 1.6;
+      resize: vertical;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+    .playback-bar {
+      display: flex;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .playback-bar button {
+      flex: 1;
+      padding: 16px;
+      font-size: 1.2rem;
+    }
+    .btn-speak {
+      background-color: var(--accent-color);
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+
+  <header role="banner">
+    <h1>Accessible AI Reading & OCR Hub</h1>
+    <div class="author-tag">Developed by <strong>Saifulla</strong></div>
+  </header>
+
+  <main role="main">
+    <section class="controls-grid" aria-label="Input options">
+      <label class="file-btn" for="pdf-input" tabindex="0" role="button">
+        📄 Open PDF Book
+      </label>
+      <input type="file" id="pdf-input" accept="application/pdf" />
+
+      <label class="file-btn" for="img-input" tabindex="0" role="button">
+        📷 Scan / Describe Image
+      </label>
+      <input type="file" id="img-input" accept="image/*" />
+    </section>
+
+    <section class="speed-controls" aria-label="Reading options">
+      <label for="speed-select"><strong>Reading Speed:</strong></label>
+      <select id="speed-select">
+        <option value="0.75">0.75x Slow</option>
+        <option value="1.0" selected>1.0x Normal</option>
+        <option value="1.25">1.25x Fast</option>
+        <option value="1.5">1.5x Very Fast</option>
+        <option value="2.0">2.0x Double Speed</option>
+      </select>
+    </section>
+
+    <div id="status" role="status" aria-live="polite">Ready</div>
+
+    <label for="content-box" class="sr-only" style="position: absolute; left: -9999px;">Book or OCR extracted text</label>
+    <textarea id="content-box" placeholder="Book text, PDF content, or OCR recognized text will appear here... You can also type or paste directly.">Welcome to Accessible AI Reading & OCR Hub, developed by Saifulla.
+
+Use 'Open PDF Book' to load documents, or 'Scan / Describe Image' to extract text from photos.</textarea>
+
+    <section class="playback-bar" aria-label="Audio controls">
+      <button class="btn-speak" id="btn-read" aria-label="Read Aloud">▶ Read Aloud</button>
+      <button id="btn-stop" aria-label="Stop Reading">⏹ Stop</button>
+      <button id="btn-clear" aria-label="Clear Text">✖ Clear</button>
+    </section>
+  </main>
+
+  <script>
+    const contentBox = document.getElementById('content-box');
+    const statusEl = document.getElementById('status');
+    const speedSelect = document.getElementById('speed-select');
+    const btnRead = document.getElementById('btn-read');
+    const btnStop = document.getElementById('btn-stop');
+    const btnClear = document.getElementById('btn-clear');
+    const pdfInput = document.getElementById('pdf-input');
+    const imgInput = document.getElementById('img-input');
+
+    let synth = window.speechSynthesis;
+    let utterance = null;
+
+    function readText() {
+      stopText();
+      const text = contentBox.value.trim();
+      if (!text) {
+        statusEl.textContent = 'Text area is empty.';
+        return;
+      }
+      utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = parseFloat(speedSelect.value);
+      utterance.onstart = () => { statusEl.textContent = 'Reading aloud...'; };
+      utterance.onend = () => { statusEl.textContent = 'Finished reading.'; };
+      utterance.onerror = () => { statusEl.textContent = 'Playback stopped.'; };
+      synth.speak(utterance);
+    }
+
+    function stopText() {
+      if (synth.speaking || synth.pending) {
+        synth.cancel();
+      }
+      statusEl.textContent = 'Stopped.';
+    }
+
+    btnRead.addEventListener('click', readText);
+    btnStop.addEventListener('click', stopText);
+    btnClear.addEventListener('click', () => {
+      stopText();
+      contentBox.value = '';
+      statusEl.textContent = 'Cleared.';
+    });
+
+    pdfInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      statusEl.textContent = 'Loading PDF...';
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          statusEl.textContent = `Extracting page ${i} of ${pdf.numPages}...`;
+          const page = await pdf.getPage(i);
+          const tokenized = await page.getTextContent();
+          const pageText = tokenized.items.map(item => item.str).join(' ');
+          fullText += `--- Page ${i} ---\n` + pageText + '\n\n';
+        }
+        contentBox.value = fullText;
+        statusEl.textContent = `Loaded PDF (${pdf.numPages} pages).`;
+        readText();
+      } catch (err) {
+        statusEl.textContent = 'Failed to read PDF file.';
+        console.error(err);
+      }
+    });
+
+    imgInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      statusEl.textContent = 'Recognizing text from image (OCR)...';
+      try {
+        const { data: { text } } = await Tesseract.recognize(file, 'eng', {
+          logger: m => {
+            if (m.status === 'recognizingtext') {
+              statusEl.textContent = `Scanning: ${Math.round(m.progress * 100)}%`;
+            }
+          }
+        });
+        if (text && text.trim().length > 0) {
+          contentBox.value = text;
+          statusEl.textContent = 'Text recognized successfully!';
+          readText();
+        } else {
+          statusEl.textContent = 'No text detected in this image.';
+        }
+      } catch (err) {
+        statusEl.textContent = 'Error processing image OCR.';
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+  </html>
+  
