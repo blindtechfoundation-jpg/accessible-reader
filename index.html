@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>accessible_reader</title>
 
+  <!-- PDF & OCR Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
@@ -34,7 +35,7 @@
       min-height: 100vh;
     }
 
-    /* Welcome Screen */
+    /* Welcome Card */
     #welcome-card {
       display: block;
       max-width: 440px;
@@ -167,6 +168,14 @@
   </style>
 
   <script>
+    // Initialize baseline history state on load
+    window.addEventListener('DOMContentLoaded', function() {
+      refreshClock();
+      try {
+        history.replaceState({ page: 'hub' }, '', '');
+      } catch (e) {}
+    });
+
     function refreshClock() {
       const now = new Date();
       const d = document.getElementById('live-date-val');
@@ -175,7 +184,6 @@
       if (t) t.innerText = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
     }
     setInterval(refreshClock, 1000);
-    window.addEventListener('DOMContentLoaded', refreshClock);
 
     function launchMainHub() {
       document.getElementById('welcome-card').style.display = 'none';
@@ -183,11 +191,18 @@
       speakText('Welcome to accessible reader.');
     }
 
+    let activeWindowId = null;
+
     function openWindow(windowId, title) {
       document.querySelectorAll('.window-modal').forEach(w => w.style.display = 'none');
       const target = document.getElementById(windowId);
       if (target) {
         target.style.display = 'block';
+        activeWindowId = windowId;
+        // Push state so back gesture closes modal instead of exiting app
+        try {
+          history.pushState({ modalOpen: true, id: windowId }, '', '');
+        } catch (e) {}
         setAppStatus(title);
         speakText(title);
       }
@@ -196,10 +211,31 @@
     function closeWindow(windowId) {
       stopSpeaking();
       const target = document.getElementById(windowId);
-      if (target) target.style.display = 'none';
-      setAppStatus('Ready');
-      speakText('Closed window');
+      if (target) {
+        target.style.display = 'none';
+        activeWindowId = null;
+        setAppStatus('Ready');
+        speakText('Closed window');
+      }
     }
+
+    // Bulletproof back-button interceptor
+    window.addEventListener('popstate', function(event) {
+      if (activeWindowId) {
+        const modal = document.getElementById(activeWindowId);
+        if (modal) {
+          modal.style.display = 'none';
+        }
+        activeWindowId = null;
+        stopSpeaking();
+        setAppStatus('Ready');
+        speakText('Closed window');
+        // Push state back so app remains stable
+        try {
+          history.pushState({ page: 'hub' }, '', '');
+        } catch (e) {}
+      }
+    });
 
     function setAppStatus(msg) {
       const s = document.getElementById('status-bar');
@@ -468,33 +504,4 @@
     }
 
     function copyMainText() {
-      const txt = document.getElementById('reading-content').value;
-      if (txt && navigator.clipboard) navigator.clipboard.writeText(txt);
-      speakText('Text copied.');
-    }
-    
-    function clearMainText() {
-      document.getElementById('reading-content').value = '';
-      stopSpeaking();
-      speakText('Cleared.');
-    }
-
-    function askAIAssistant() {
-      const q = document.getElementById('ai-query-box').value;
-      if (!q) return;
-      speakText('Processing.');
-      setTimeout(() => {
-        const ans = `AI Answer for: "${q}"\nQuery logged by accessible_reader.`;
-        document.getElementById('ai-reply-box').value = ans;
-        speakText(ans);
-      }, 500);
-    }
-
-    function summarizeReaderText() {
-      const txt = document.getElementById('reading-content').value;
-      if (!txt) { speakText('Reader text is empty.'); return; }
-      speakText('Summarizing.');
-      setTimeout(() => {
-        const chunks = txt.split(/[.!?]+/).filter(Boolean);
-        const sum = chunks.slice(0, 3).join('. ') + '.';
-        document.getElementById('ai-re
+      const txt = document.getElementByI
