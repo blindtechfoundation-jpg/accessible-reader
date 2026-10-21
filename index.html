@@ -2,42 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Accessible AI Reading & OCR Hub</title>
-  
-  <!-- PDF.js library for document parsing -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>accessible_reader</title>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <!-- Tesseract.js library for OCR text recognition -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
     :root {
-      --bg-color: #121212;
-      --card-bg: #1e1e1e;
-      --accent-color: #ffc107;
-      --text-color: #ffffff;
-      --border-color: #333333;
+      --bg: #000000;
+      --surface: #1a1a1a;
+      --surface-light: #2a2a2a;
+      --accent: #ffcc00;
+      --text: #ffffff;
+      --border: #444444;
+      --danger: #ff4444;
+      --success: #00e676;
     }
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, Roboto, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
     body {
-      margin: 0;
-      padding: 16px;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      font-family: system-ui, -apple-system, sans-serif;
-      font-size: 18px;
-      line-height: 1.6;
+      background-color: var(--bg);
+      color: var(--text);
+      font-size: 19px;
+      line-height: 1.5;
+      padding: 12px;
       min-height: 100vh;
     }
 
-    /* Full-screen Developer Welcome Modal */
     #welcome-modal {
       position: fixed;
       inset: 0;
-      background-color: #0c0c0c;
-      z-index: 9999;
+      background-color: #000000;
+      z-index: 99999;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -45,415 +47,604 @@
       padding: 24px;
       text-align: center;
     }
-    .modal-card {
-      background-color: var(--card-bg);
-      border: 2px solid var(--accent-color);
+    .welcome-card {
+      background-color: var(--surface);
+      border: 3px solid var(--accent);
       border-radius: 16px;
-      padding: 30px 20px;
-      max-width: 420px;
+      padding: 28px 20px;
       width: 100%;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      max-width: 420px;
+      box-shadow: 0 0 25px rgba(255, 204, 0, 0.2);
     }
-    .modal-title {
-      font-size: 1.6rem;
-      color: var(--accent-color);
-      margin: 0 0 16px 0;
-      font-weight: bold;
+    .welcome-card h2 {
+      color: var(--accent);
+      font-size: 1.8rem;
+      margin-bottom: 16px;
+      letter-spacing: 0.5px;
     }
-    .datetime-container {
-      background-color: #121212;
-      border: 1px solid var(--border-color);
+    .datetime-box {
+      background-color: #000000;
+      border: 1px solid var(--border);
       border-radius: 10px;
       padding: 14px;
       margin-bottom: 20px;
     }
-    .date-text {
-      font-size: 1.1rem;
+    .datetime-box .date {
+      font-size: 1.15rem;
       color: #eeeeee;
       margin-bottom: 6px;
-      font-weight: 500;
     }
-    .time-text {
-      font-size: 1.4rem;
-      color: var(--accent-color);
+    .datetime-box .time {
+      font-size: 1.6rem;
+      color: var(--accent);
       font-weight: bold;
     }
-    .developer-box {
+    .developer-text {
       font-size: 1.25rem;
-      color: #ffffff;
       margin-bottom: 24px;
     }
-    .developer-name {
-      color: var(--accent-color);
-      font-weight: bold;
+    .developer-text span {
       display: block;
-      font-size: 1.6rem;
+      color: var(--accent);
+      font-size: 1.8rem;
+      font-weight: 800;
       margin-top: 4px;
     }
     .btn-next {
-      background-color: var(--accent-color);
+      background-color: var(--accent);
       color: #000000;
-      font-size: 1.3rem;
-      font-weight: bold;
+      font-size: 1.4rem;
+      font-weight: 900;
       border: none;
-      border-radius: 10px;
-      padding: 16px 36px;
+      border-radius: 12px;
+      padding: 16px;
       width: 100%;
       cursor: pointer;
     }
     .btn-next:active {
-      background-color: #e0a800;
+      transform: scale(0.98);
+      background-color: #e6b800;
     }
 
-    /* Main App Interface (Initially hidden until Next is clicked) */
     #main-app {
       display: none;
+      max-width: 650px;
+      margin: 0 auto;
+      padding-bottom: 60px;
     }
     header {
       text-align: center;
-      margin-bottom: 16px;
-      border-bottom: 2px solid var(--accent-color);
+      border-bottom: 2px solid var(--accent);
       padding-bottom: 10px;
+      margin-bottom: 12px;
     }
-    h1 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: var(--accent-color);
+    header h1 {
+      color: var(--accent);
+      font-size: 1.6rem;
+      margin-bottom: 4px;
     }
-    .controls-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 14px;
+    header p {
+      font-size: 0.95rem;
+      color: #bbbbbb;
     }
-    button, label.file-btn {
+
+    .tab-bar {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: var(--card-bg);
-      color: var(--text-color);
-      border: 2px solid var(--accent-color);
-      padding: 14px 10px;
+      overflow-x: auto;
+      gap: 8px;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      scrollbar-width: none;
+    }
+    .tab-bar::-webkit-scrollbar {
+      display: none;
+    }
+    .tab-btn {
+      flex: 0 0 auto;
+      background-color: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
       border-radius: 8px;
       font-size: 1rem;
       font-weight: bold;
       cursor: pointer;
-      text-align: center;
     }
-    button:active, label.file-btn:active {
-      background-color: var(--accent-color);
+    .tab-btn.active {
+      background-color: var(--accent);
       color: #000000;
+      border-color: var(--accent);
+    }
+
+    .panel {
+      display: none;
+    }
+    .panel.active {
+      display: block;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    button, label.btn-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--surface);
+      color: var(--text);
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      padding: 14px 8px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      min-height: 52px;
+    }
+    button:active, label.btn-action:active {
+      background-color: var(--accent);
+      color: #000000;
+    }
+    .btn-accent {
+      background-color: var(--accent);
+      color: #000000;
+    }
+    .btn-danger {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+    .full-width {
+      width: 100%;
+      margin-bottom: 10px;
     }
     input[type="file"] {
       display: none;
     }
-    .settings-row {
+
+    .setting-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: var(--card-bg);
+      background-color: var(--surface);
+      border: 1px solid var(--border);
       padding: 10px 14px;
       border-radius: 8px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
-    select {
-      background: #000000;
-      color: var(--accent-color);
-      border: 1px solid var(--accent-color);
-      padding: 8px 12px;
+    select, input[type="text"] {
+      background-color: #000000;
+      color: var(--accent);
+      border: 1px solid var(--accent);
       border-radius: 6px;
+      padding: 8px 12px;
       font-size: 1rem;
       font-weight: bold;
     }
-    #status {
+    input[type="text"] {
+      width: 100%;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+
+    #live-status {
       text-align: center;
-      font-size: 1.05rem;
-      color: var(--accent-color);
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 1.1rem;
       margin-bottom: 10px;
       min-height: 28px;
-      font-weight: bold;
     }
+
     textarea {
       width: 100%;
-      height: 300px;
-      background-color: var(--card-bg);
-      color: var(--text-color);
-      border: 2px solid var(--border-color);
+      height: 240px;
+      background-color: var(--surface);
+      color: var(--text);
+      border: 2px solid var(--border);
       border-radius: 8px;
-      padding: 14px;
-      font-size: 1.2rem;
+      padding: 12px;
+      font-size: 1.15rem;
       line-height: 1.6;
       resize: vertical;
+      margin-bottom: 12px;
     }
     textarea:focus {
       outline: none;
-      border-color: var(--accent-color);
+      border-color: var(--accent);
     }
-    .playback-bar {
-      display: flex;
-      gap: 12px;
-      margin-top: 14px;
-    }
-    .playback-bar button {
-      flex: 1;
+
+    .card {
+      background-color: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 10px;
       padding: 16px;
-      font-size: 1.15rem;
+      margin-bottom: 12px;
+      text-align: center;
     }
-    .btn-speak {
-      background-color: var(--accent-color);
-      color: #000000;
+    .card-val {
+      font-size: 1.8rem;
+      color: var(--accent);
+      font-weight: bold;
+      margin: 8px 0;
+    }
+
+    .calc-screen {
+      background-color: #000000;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      font-size: 2rem;
+      text-align: right;
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      min-height: 64px;
+      word-break: break-all;
+    }
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .calc-grid button {
+      min-height: 58px;
+      font-size: 1.35rem;
+    }
+
+    .list-box {
+      text-align: left;
+      margin-top: 10px;
+    }
+    .list-item {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. Startup Developer Window -->
-  <div id="welcome-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-card">
-      <h2 id="modal-title" class="modal-title">Accessible Reader</h2>
+  <div id="welcome-modal" role="dialog" aria-modal="true" aria-labelledby="modal-head">
+    <div class="welcome-card">
+      <h2 id="modal-head">accessible_reader</h2>
       
-      <div class="datetime-container">
-        <div id="current-date" class="date-text" aria-live="polite">Loading date...</div>
-        <div id="current-time" class="time-text" aria-live="polite">--:--:--</div>
+      <div class="datetime-box">
+        <div id="clock-date" class="date" aria-live="polite">Loading date...</div>
+        <div id="clock-time" class="time" aria-live="polite">--:--:--</div>
       </div>
 
-      <div class="developer-box">
+      <div class="developer-text">
         Developed by
-        <span class="developer-name">Saifulla</span>
+        <span>Saifulla</span>
       </div>
 
-      <button id="btn-next" class="btn-next" aria-label="Next, open application">Next ▶</button>
+      <button id="btn-start" class="btn-next" aria-label="Next, enter accessible reader">Next ▶</button>
     </div>
   </div>
 
-  <!-- 2. Main Reader Hub Workspace -->
   <div id="main-app">
     <header role="banner">
-      <h1>Accessible AI Reading & OCR Hub</h1>
+      <h1>accessible_reader</h1>
+      <p>Accessible AI Reading, OCR & Tech Assistant</p>
     </header>
 
-    <main role="main">
-      <!-- Input Options -->
-      <section class="controls-grid" aria-label="Document and Image tools">
-        <label class="file-btn" for="doc-input" tabindex="0" role="button">
+    <nav class="tab-bar" aria-label="Main navigation tabs">
+      <button class="tab-btn active" data-tab="tab-reader">📖 Reader & OCR</button>
+      <button class="tab-btn" data-tab="tab-ai">🤖 AI Assistant</button>
+      <button class="tab-btn" data-tab="tab-sensors">🧭 Compass & Light</button>
+      <button class="tab-btn" data-tab="tab-calc">🧮 Talking Calc</button>
+      <button class="tab-btn" data-tab="tab-tools">🛠 Daily Tools</button>
+    </nav>
+
+    <div id="live-status" role="status" aria-live="polite">Ready</div>
+
+    <section id="tab-reader" class="panel active" aria-label="Reader and OCR Hub">
+      <div class="grid-2">
+        <label class="btn-action" for="doc-file" tabindex="0" role="button">
           📄 Open PDF / Book
         </label>
-        <input type="file" id="doc-input" accept=".pdf,.txt,application/pdf,text/plain" />
+        <input type="file" id="doc-file" accept=".pdf,.txt,.csv,.json,.html" />
 
-        <label class="file-btn" for="img-input" tabindex="0" role="button">
-          📷 Scan / OCR Image
+        <label class="btn-action" for="camera-file" tabindex="0" role="button">
+          📷 Camera / OCR
         </label>
-        <input type="file" id="img-input" accept="image/*" />
-      </section>
+        <input type="file" id="camera-file" accept="image/*" />
+      </div>
 
-      <!-- Speed & Font Bar -->
-      <section class="settings-row" aria-label="Reading options">
-        <label for="speed-select"><strong>Reading Speed:</strong></label>
-        <select id="speed-select">
+      <div class="setting-item">
+        <label for="tts-rate"><strong>Speech Speed:</strong></label>
+        <select id="tts-rate">
           <option value="0.75">0.75x Slow</option>
           <option value="1.0" selected>1.0x Normal</option>
           <option value="1.25">1.25x Fast</option>
           <option value="1.5">1.5x Very Fast</option>
           <option value="2.0">2.0x Double</option>
         </select>
-      </section>
+      </div>
 
-      <!-- Live Action Status -->
-      <div id="status" role="status" aria-live="polite">Ready</div>
+      <textarea id="read-box" aria-label="Document and recognized text area" placeholder="Your document or camera OCR text will appear here...">Welcome to accessible_reader.
 
-      <!-- Book / OCR Content Box -->
-      <textarea id="content-box" aria-label="Reader content text area" placeholder="Your PDF content, scanned page text, or notes appear here...">Welcome to Accessible AI Reading & OCR Hub.
+• Tap 'Open PDF / Book' to load any PDF or text file.
+• Tap 'Camera / OCR' to capture or select a photo to extract text.
+• Use 'Read Aloud' to listen with full audio control.</textarea>
 
-• Use 'Open PDF / Book' to load any PDF or text file.
-• Use 'Scan / OCR Image' to extract text from a photo.
-• Tap 'Read Aloud' to listen to the text.</textarea>
+      <div class="grid-2">
+        <button id="btn-speak-now" class="btn-accent">▶ Read Aloud</button>
+        <button id="btn-stop-now">⏹ Stop</button>
+      </div>
+      <div class="grid-2">
+        <button id="btn-copy-now">📋 Copy Text</button>
+        <button id="btn-clear-now" class="btn-danger">✖ Clear</button>
+      </div>
+    </section>
 
-      <!-- Playback Actions -->
-      <section class="playback-bar" aria-label="Playback controls">
-        <button class="btn-speak" id="btn-read" aria-label="Read Aloud">▶ Read Aloud</button>
-        <button id="btn-stop" aria-label="Stop Reading">⏹ Stop</button>
-        <button id="btn-clear" aria-label="Clear Text">✖ Clear</button>
-      </section>
-    </main>
+    <section id="tab-ai" class="panel" aria-label="AI Tech Assistant">
+      <input type="text" id="ai-input" placeholder="Type a question or instruction..." aria-label="AI question input" />
+      
+      <div class="grid-2">
+        <button id="btn-ai-query" class="btn-accent">💬 Ask Assistant</button>
+        <button id="btn-ai-sum">📝 Summarize Text</button>
+      </div>
+
+      <textarea id="ai-output" aria-label="AI response output area" placeholder="Assistant answers, explanations, and summaries appear here..."></textarea>
+      <button id="btn-ai-reset" class="full-width">Clear Assistant Output</button>
+    </section>
+
+    <section id="tab-sensors" class="panel" aria-label="Sensors and Environment">
+      <div class="card">
+        <div><strong>Tactile Compass</strong></div>
+        <div id="val-compass" class="card-val">--°</div>
+        <div id="dir-compass">Acquiring heading...</div>
+      </div>
+      <button id="btn-speak-compass" class="full-width">📢 Announce Compass Heading</button>
+
+      <div class="card">
+        <div><strong>Ambient Light Status</strong></div>
+        <div id="val-light" class="card-val">Checking...</div>
+        <div id="desc-light">Measuring room brightness</div>
+      </div>
+      <button id="btn-speak-light" class="full-width">💡 Announce Ambient Light</button>
+    </section>
+
+    <section id="tab-calc" class="panel" aria-label="Talking Calculator">
+      <div id="calc-screen" class="calc-screen" aria-live="assertive">0</div>
+      <div class="calc-grid">
+        <button class="c-key" data-k="C">C</button>
+        <button class="c-key" data-k="(">(</button>
+        <button class="c-key" data-k=")">)</button>
+        <button class="c-key" data-k="/">÷</button>
+
+        <button class="c-key" data-k="7">7</button>
+        <button class="c-key" data-k="8">8</button>
+        <button class="c-key" data-k="9">9</button>
+        <button class="c-key" data-k="*">×</button>
+
+        <button class="c-key" data-k="4">4</button>
+        <button class="c-key" data-k="5">5</button>
+        <button class="c-key" data-k="6">6</button>
+        <button class="c-key" data-k="-">-</button>
+
+        <button class="c-key" data-k="1">1</button>
+        <button class="c-key" data-k="2">2</button>
+        <button class="c-key" data-k="3">3</button>
+        <button class="c-key" data-k="+">+</button>
+
+        <button class="c-key" data-k="0">0</button>
+        <button class="c-key" data-k=".">.</button>
+        <button class="c-key" data-k="DEL">⌫</button>
+        <button class="c-key btn-accent" data-k="=">=</button>
+      </div>
+    </section>
+
+    <section id="tab-tools" class="panel" aria-label="Daily Productivity Tools">
+      <div class="card">
+        <div><strong>Battery & Time</strong></div>
+        <div id="val-battery" class="card-val">Battery: --%</div>
+        <button id="btn-speak-battery" class="full-width" style="margin-top: 10px;">🔋 Announce Battery & Time</button>
+      </div>
+
+      <div class="card">
+        <div><strong>Text Analyzer</strong></div>
+        <div id="val-analysis" style="margin: 10px 0; font-size: 1.05rem;">Load or enter text in the Reader tab first.</div>
+        <button id="btn-run-analysis" class="full-width">📊 Analyze Document Text</button>
+      </div>
+
+      <div class="card">
+        <div><strong>My Reminders</strong></div>
+        <input type="text" id="remind-input" placeholder="Enter task or reminder..." />
+        <button id="btn-add-remind" class="full-width">➕ Save Reminder</button>
+        <div id="remind-list" class="list-box"></div>
+      </div>
+    </section>
   </div>
 
   <script>
-    // Configure PDF.js Worker
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     }
 
-    // Live Date and Time Updater
-    function updateLiveDateTime() {
+    function updateLiveClock() {
       const now = new Date();
-      const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
-
-      const dateEl = document.getElementById('current-date');
-      const timeEl = document.getElementById('current-time');
-
-      if (dateEl) dateEl.textContent = now.toLocaleDateString(undefined, dateOptions);
-      if (timeEl) timeEl.textContent = now.toLocaleTimeString(undefined, timeOptions);
+      const dEl = document.getElementById('clock-date');
+      const tEl = document.getElementById('clock-time');
+      if (dEl) dEl.textContent = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      if (tEl) tEl.textContent = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
     }
-    setInterval(updateLiveDateTime, 1000);
-    updateLiveDateTime();
+    setInterval(updateLiveClock, 1000);
+    updateLiveClock();
 
-    // Welcome Screen Next Button Handler
     const welcomeModal = document.getElementById('welcome-modal');
     const mainApp = document.getElementById('main-app');
-    const btnNext = document.getElementById('btn-next');
+    const btnStart = document.getElementById('btn-start');
 
-    btnNext.addEventListener('click', () => {
+    btnStart.addEventListener('click', () => {
       welcomeModal.style.display = 'none';
       mainApp.style.display = 'block';
-      // Initialize speech synthesis voices on first user click
       if ('speechSynthesis' in window) {
         window.speechSynthesis.getVoices();
       }
+      speak('Welcome to accessible reader.');
     });
 
-    // Elements
-    const contentBox = document.getElementById('content-box');
-    const statusEl = document.getElementById('status');
-    const speedSelect = document.getElementById('speed-select');
-    const btnRead = document.getElementById('btn-read');
-    const btnStop = document.getElementById('btn-stop');
-    const btnClear = document.getElementById('btn-clear');
-    const docInput = document.getElementById('doc-input');
-    const imgInput = document.getElementById('img-input');
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.panel');
+    tabs.forEach(t => {
+      t.addEventListener('click', () => {
+        tabs.forEach(btn => btn.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        t.classList.add('active');
+        const target = document.getElementById(t.getAttribute('data-tab'));
+        if (target) target.classList.add('active');
+        const txt = t.textContent.trim();
+        announce(txt);
+        speak(txt);
+      });
+    });
 
-    // Speech Synthesis
-    function stopSpeech() {
+    const statusEl = document.getElementById('live-status');
+    const rateEl = document.getElementById('tts-rate');
+
+    function announce(msg) {
+      if (statusEl) statusEl.textContent = msg;
+    }
+
+    function stopSpeaking() {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
-      statusEl.textContent = 'Stopped.';
     }
 
-    function readText() {
-      if (!('speechSynthesis' in window)) {
-        statusEl.textContent = 'Text-to-Speech is not supported on this device.';
-        return;
-      }
-      stopSpeech();
-
-      const text = contentBox.value.trim();
-      if (!text) {
-        statusEl.textContent = 'The reading area is empty.';
-        return;
-      }
-
-      // Small delay to ensure Android TTS clears the cancellation state
+    function speak(text) {
+      if (!('speechSynthesis' in window) || !text) return;
+      stopSpeaking();
       setTimeout(() => {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = parseFloat(speedSelect.value) || 1.0;
-        utterance.pitch = 1.0;
-
-        utterance.onstart = () => {
-          statusEl.textContent = 'Reading aloud...';
-        };
-        utterance.onend = () => {
-          statusEl.textContent = 'Finished reading.';
-        };
-        utterance.onerror = (e) => {
-          console.error('TTS error:', e);
-          statusEl.textContent = 'Playback finished.';
-        };
-
-        window.speechSynthesis.speak(utterance);
-      }, 50);
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = parseFloat(rateEl ? rateEl.value : 1.0) || 1.0;
+        u.pitch = 1.0;
+        window.speechSynthesis.speak(u);
+      }, 40);
     }
 
-    btnRead.addEventListener('click', readText);
-    btnStop.addEventListener('click', stopSpeech);
-    btnClear.addEventListener('click', () => {
-      stopSpeech();
-      contentBox.value = '';
-      statusEl.textContent = 'Cleared.';
+    const readBox = document.getElementById('read-box');
+    const docFile = document.getElementById('doc-file');
+    const cameraFile = document.getElementById('camera-file');
+
+    document.getElementById('btn-speak-now').addEventListener('click', () => {
+      const txt = readBox.value.trim();
+      if (!txt) {
+        announce('Text box is empty.');
+        speak('Text box is empty.');
+        return;
+      }
+      announce('Reading aloud...');
+      speak(txt);
     });
 
-    // PDF and TXT File Reader
-    docInput.addEventListener('change', async (e) => {
+    document.getElementById('btn-stop-now').addEventListener('click', () => {
+      stopSpeaking();
+      announce('Stopped playback.');
+    });
+
+    document.getElementById('btn-copy-now').addEventListener('click', () => {
+      if (!readBox.value.trim()) return;
+      navigator.clipboard.writeText(readBox.value);
+      announce('Text copied to clipboard.');
+      speak('Text copied.');
+    });
+
+    document.getElementById('btn-clear-now').addEventListener('click', () => {
+      stopSpeaking();
+      readBox.value = '';
+      announce('Cleared text.');
+      speak('Cleared.');
+    });
+
+    docFile.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
+      stopSpeaking();
+      const fname = file.name.toLowerCase();
 
-      stopSpeech();
-      const fileName = file.name.toLowerCase();
-
-      if (fileName.endsWith('.txt')) {
-        statusEl.textContent = 'Loading text file...';
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          contentBox.value = event.target.result;
-          statusEl.textContent = `Loaded ${file.name}`;
-          readText();
-        };
-        reader.readAsText(file);
-      } else if (fileName.endsWith('.pdf') || file.type === 'application/pdf') {
-        statusEl.textContent = 'Reading PDF...';
-        try {
-          const fileReader = new FileReader();
-          fileReader.onload = async function() {
-            try {
-              const typedarray = new Uint8Array(this.result);
-              const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
-              let fullText = '';
-              for (let i = 1; i <= pdf.numPages; i++) {
-                statusEl.textContent = `Extracting page ${i} of ${pdf.numPages}...`;
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                const pageString = textContent.items.map(item => item.str).join(' ');
-                fullText += `--- Page ${i} ---\n` + pageString + '\n\n';
-              }
-              contentBox.value = fullText.trim() ? fullText : 'This PDF appears to be a scanned image without selectable text. Use Scan / OCR Image instead.';
-              statusEl.textContent = `Loaded PDF (${pdf.numPages} pages).`;
-              readText();
-            } catch (err) {
-              console.error(err);
-              statusEl.textContent = 'Could not parse PDF pages.';
+      if (fname.endsWith('.pdf')) {
+        announce('Reading PDF file...');
+        speak('Opening PDF document.');
+        const fr = new FileReader();
+        fr.onload = async function() {
+          try {
+            const pdfData = new Uint8Array(this.result);
+            const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+            let fullDoc = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+              announce(`Reading page ${i} of ${pdf.numPages}...`);
+              const page = await pdf.getPage(i);
+              const content = await page.getTextContent();
+              const pageText = content.items.map(it => it.str).join(' ');
+              fullDoc += `--- Page ${i} ---\n` + pageText + '\n\n';
             }
-          };
-          fileReader.readAsArrayBuffer(file);
-        } catch (err) {
-          console.error(err);
-          statusEl.textContent = 'Error opening PDF file.';
-        }
+            readBox.value = fullDoc.trim() || 'This PDF does not contain selectable text. Use Camera / OCR to read images.';
+            announce(`Loaded PDF with ${pdf.numPages} pages.`);
+            speak(`Loaded PDF with ${pdf.numPages} pages.`);
+          } catch (err) {
+            announce('Error reading PDF file.');
+            speak('Error reading PDF file.');
+          }
+        };
+        fr.readAsArrayBuffer(file);
+      } else {
+        const fr = new FileReader();
+        fr.onload = (ev) => {
+          readBox.value = ev.target.result;
+          announce(`Loaded ${file.name}`);
+          speak(`Loaded ${file.name}`);
+        };
+        fr.readAsText(file);
       }
     });
 
-    // Tesseract OCR Reader
-    imgInput.addEventListener('change', async (e) => {
+    cameraFile.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-
-      stopSpeech();
-      statusEl.textContent = 'Initializing OCR engine...';
+      stopSpeaking();
+      announce('Initializing OCR scanner...');
+      speak('Starting document scan. Please wait.');
 
       try {
-        const result = await Tesseract.recognize(file, 'eng', {
-          logger: (progress) => {
-            if (progress.status === 'recognizingtext') {
-              const pct = Math.round((progress.progress || 0) * 100);
-              statusEl.textContent = `Scanning document: ${pct}%`;
-            } else if (progress.status) {
-              statusEl.textContent = `${progress.status}...`;
+        const ocr = await Tesseract.recognize(file, 'eng', {
+          logger: m => {
+            if (m.status === 'recognizingtext') {
+              const pct = Math.round((m.progress || 0) * 100);
+              announce(`Scanning text: ${pct}%`);
             }
           }
         });
-
-        const recognizedText = result && result.data ? result.data.text : '';
-        if (recognizedText && recognizedText.trim().length > 0) {
-          contentBox.value = recognizedText;
-          statusEl.textContent = 'OCR extraction complete!';
-          readText();
+        const out = ocr?.data?.text?.trim() || '';
+        if (out) {
+          readBox.value = out;
+          announce('OCR completed successfully.');
+          speak('OCR completed. Reading extracted text.');
+          speak(out);
         } else {
-          statusEl.textContent = 'No readable text was detected in the image.';
+          announce('No readable text found in image.');
+          speak('No readable text found.');
         }
       } catch (err) {
-        console.error('OCR Error:', err);
-        statusEl.textContent = 'Failed to recognize text from image.';
+        announce('Failed to process image OCR.');
+        speak('Failed to process image OCR.');
       }
     });
-  </script>
-</body>
-</html>
+
+    const aiInput = document.getElementById('ai-input');
+    const aiOutput = document.getElementById('ai-output');
+
+    document.getElementById('btn-ai-query').addEventListener('click', () => {
+      const q = aiInp
