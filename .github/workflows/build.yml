@@ -24,55 +24,206 @@ jobs:
 
       - name: Build Accessible Reader APK
         run: |
-          # 1. Initialize project
+          set -e
+          # 1. Create clean project structure
           flutter create --org com.saifulla --project-name accessible_reader app
           cd app
 
-          # 2. Add dependencies
-          flutter pub add flutter_tts image_picker google_mlkit_text_recognition share_plus path_provider
+          # 2. Add stable text-to-speech engine
+          flutter pub add flutter_tts
 
-          # 3. Add Android permissions
-          sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>' android/app/src/main/AndroidManifest.xml
+          # 3. Inject full accessible reader app code
+          cat << 'EOF' > lib/main.dart
+          import 'package:flutter/material.dart';
+          import 'package:flutter/semantics.dart';
+          import 'package:flutter_tts/flutter_tts.dart';
 
-          # 4. Safe Gradle configuration: Set minSdk 21 and compileSdk 34 cleanly
-          python3 - << 'EOF'
-          import os, re
-          for root, _, files in os.walk('android'):
-              for f in files:
-                  if f.startswith('build.gradle'):
-                      path = os.path.join(root, f)
-                      with open(path, 'r') as fp:
-                          content = fp.read()
-                      content = re.sub(r'minSdk(Version)?\s*=?\s*(\S+)', r'minSdk = 21' if '.kts' in f else r'minSdkVersion 21', content)
-                      content = re.sub(r'compileSdk(Version)?\s*=?\s*(\S+)', r'compileSdk = 34' if '.kts' in f else r'compileSdkVersion 34', content)
-                      content = re.sub(r'targetSdk(Version)?\s*=?\s*(\S+)', r'targetSdk = 34' if '.kts' in f else r'targetSdkVersion 34', content)
-                      with open(path, 'w') as fp:
-                          fp.write(content)
-          EOF
-
-          # 5. Copy custom app code
-          if [ -f ../main.dart ]; then
-            cp ../main.dart lib/main.dart
-          fi
-
-          # 6. Build debug APK and log everything to file
-          flutter build apk --debug -v > ../build-error-log.txt 2>&1 || {
-            echo "BUILD COMPLETED WITH ERROR"
-            tail -n 100 ../build-error-log.txt
-            exit 1
+          void main() {
+            runApp(const AccessibleReaderApp());
           }
 
-      - name: Upload APK
+          class AccessibleReaderApp extends StatelessWidget {
+            const AccessibleReaderApp({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              return MaterialApp(
+                title: 'Accessible Reader',
+                debugShowCheckedModeBanner: false,
+                theme: ThemeData(
+                  brightness: Brightness.dark,
+                  primarySwatch: Colors.amber,
+                  scaffoldBackgroundColor: const Color(0xFF121212),
+                  textTheme: const TextTheme(
+                    bodyLarge: TextStyle(fontSize: 22.0, color: Colors.white, height: 1.5),
+                  ),
+                ),
+                home: const ReaderHomeScreen(),
+              );
+            }
+          }
+
+          class ReaderHomeScreen extends StatefulWidget {
+            const ReaderHomeScreen({super.key});
+
+            @override
+            State<ReaderHomeScreen> createState() => _ReaderHomeScreenState();
+          }
+
+          class _ReaderHomeScreenState extends State<ReaderHomeScreen> {
+            final FlutterTts flutterTts = FlutterTts();
+            final TextEditingController _controller = TextEditingController();
+            bool isSpeaking = false;
+
+            @override
+            void initState() {
+              super.initState();
+              _initTts();
+              _controller.text =
+                  "Welcome to Accessible Reader, developed by Saifulla. Type or paste any text or book chapter here, then tap the Read Aloud button to listen.";
+            }
+
+            void _initTts() {
+              flutterTts.setStartHandler(() {
+                setState(() => isSpeaking = true);
+              });
+              flutterTts.setCompletionHandler(() {
+                setState(() => isSpeaking = false);
+              });
+              flutterTts.setErrorHandler((msg) {
+                setState(() => isSpeaking = false);
+              });
+            }
+
+            Future<void> _speak() async {
+              if (_controller.text.isNotEmpty) {
+                await flutterTts.speak(_controller.text);
+              }
+            }
+
+            Future<void> _stop() async {
+              await flutterTts.stop();
+              setState(() => isSpeaking = false);
+            }
+
+            @override
+            void dispose() {
+              flutterTts.stop();
+              _controller.dispose();
+              super.dispose();
+            }
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                appBar: AppBar(
+                  title: const Text('Accessible Reader'),
+                  centerTitle: true,
+                  backgroundColor: Colors.black,
+                ),
+                body: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      Semantics(
+                        label: 'Developer credit: Developed by Saifulla',
+                        child: const Text(
+                          'Developed by Saifulla',
+                          style: TextStyle(
+                            color: Colors.amber,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      Expanded(
+                        child: Semantics(
+                          label: 'Text content area',
+                          hint: 'Enter or read book text here',
+                          child: TextField(
+                            controller: _controller,
+                            maxLines: null,
+                            expands: true,
+                            keyboardType: TextInputType.multiline,
+                            style: const TextStyle(fontSize: 20.0, color: Colors.white),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFF1E1E1E),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Colors.amber, width: 2),
+                              ),
+                              hintText: 'Enter text here...',
+                              hintStyle: const TextStyle(color: Colors.white54),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Semantics(
+                            button: true,
+                            label: isSpeaking ? 'Stop Reading' : 'Read Aloud',
+                            child: ElevatedButton.icon(
+                              onPressed: isSpeaking ? _stop : _speak,
+                              icon: Icon(
+                                isSpeaking ? Icons.stop : Icons.play_arrow,
+                                size: 32,
+                              ),
+                              label: Text(
+                                isSpeaking ? 'Stop' : 'Read Aloud',
+                                style: const TextStyle(fontSize: 20),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.amber,
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Semantics(
+                            button: true,
+                            label: 'Clear text',
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                _controller.clear();
+                                _stop();
+                              },
+                              icon: const Icon(Icons.clear, size: 28),
+                              label: const Text('Clear', style: TextStyle(fontSize: 18)),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                side: const BorderSide(color: Colors.white54),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+          }
+          EOF
+
+          # 4. Build standard debug APK
+          flutter build apk --debug
+
+      - name: Upload Accessible Reader APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: accessible-reader-apk
           path: app/build/app/outputs/flutter-apk/*.apk
-
-      - name: Upload Build Log Text
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: build-error-log
-          path: build-error-log.txt
           
