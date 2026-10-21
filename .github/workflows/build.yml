@@ -22,41 +22,21 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Build Accessible Reader Release APK
+      - name: Build Accessible Reader APK
         run: |
           set -e
           # 1. Create clean project
           flutter create --org com.saifulla --project-name accessible_reader app
           cd app
 
-          # 2. Add stable accessibility & pure-dart PDF reader packages
-          flutter pub add flutter_tts file_picker syncfusion_flutter_pdf
+          # 2. Add stable TTS engine
+          flutter pub add flutter_tts
 
-          # 3. Add storage permissions to AndroidManifest
-          sed -i '/<application/i \    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>' android/app/src/main/AndroidManifest.xml
-
-          # 4. Safe Gradle config
-          find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/flutter.minSdkVersion/21/g' {} +
-          find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/flutter.compileSdkVersion/34/g' {} +
-          find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/flutter.targetSdkVersion/34/g' {} +
-          find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/minSdk = .*/minSdk = 21/g' {} +
-          find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/compileSdk = .*/compileSdk = 34/g' {} +
-
-          # Disable code shrinker to avoid release crashes
-          if [ -f android/app/build.gradle.kts ]; then
-            sed -i '/release {/a \            isMinifyEnabled = false\n            isShrinkResources = false' android/app/build.gradle.kts
-          elif [ -f android/app/build.gradle ]; then
-            sed -i '/release {/a \            minifyEnabled false\n            shrinkResources false' android/app/build.gradle
-          fi
-
-          # 5. Full Accessible Reader Code
+          # 3. Create full Accessible Reader app
           cat << 'EOF' > lib/main.dart
-          import 'dart:io';
           import 'package:flutter/material.dart';
           import 'package:flutter/semantics.dart';
           import 'package:flutter_tts/flutter_tts.dart';
-          import 'package:file_picker/file_picker.dart';
-          import 'package:syncfusion_flutter_pdf/pdf.dart';
 
           void main() {
             runApp(const AccessibleReaderApp());
@@ -72,7 +52,7 @@ jobs:
                 debugShowCheckedModeBanner: false,
                 theme: ThemeData(
                   brightness: Brightness.dark,
-                  scaffoldBackgroundColor: const Color(0xFF101010),
+                  scaffoldBackgroundColor: const Color(0xFF121212),
                   colorScheme: const ColorScheme.dark(
                     primary: Color(0xFFFFC107),
                     surface: Color(0xFF1E1E1E),
@@ -98,22 +78,20 @@ jobs:
             double _fontSize = 22.0;
             double _speechRate = 0.5;
 
+            final Map<String, String> _library = {
+              "Welcome Guide":
+                  "Welcome to Accessible Reader, developed by Saifulla. This app is designed for complete accessibility. You can listen to any text read aloud, adjust the reading speed from the top menu, increase or decrease the font size for comfortable reading, or choose pre-loaded books from the library.",
+              "The Art of Thinking":
+                  "Chapter 1: The Foundation of Thought. Clear thinking requires patience and focus. When reading or studying, taking moments to absorb the core idea helps build deep understanding.",
+              "Science and Discovery":
+                  "Chapter 1: Looking into the Universe. Throughout human history, curiosity has been the driving force behind every major breakthrough, from early tools to space exploration."
+            };
+
             @override
             void initState() {
               super.initState();
               _initTts();
-              _loadWelcomeMessage();
-            }
-
-            void _loadWelcomeMessage() {
-              _textController.text =
-                  "Welcome to Accessible Reader, developed by Saifulla.\n\n"
-                  "Features included in this app:\n"
-                  "1. Open PDF & Book: Tap the button at the top to load any PDF book or TXT document.\n"
-                  "2. Text-to-Speech: Tap 'Read Aloud' to listen to any text or book chapter.\n"
-                  "3. Font Size: Use the plus (+) and minus (-) buttons on the top bar to adjust text size.\n"
-                  "4. Speed Control: Tap the speed icon on the top bar to choose between slow, normal, or fast reading.\n"
-                  "5. Type or paste your own notes directly into this box at any time.";
+              _textController.text = _library["Welcome Guide"]!;
             }
 
             void _initTts() {
@@ -136,40 +114,9 @@ jobs:
               setState(() => _isSpeaking = false);
             }
 
-            Future<void> _pickBookFile() async {
-              try {
-                FilePickerResult? result = await FilePicker.platform.pickFiles(
-                  type: FileType.custom,
-                  allowedExtensions: ['pdf', 'txt'],
-                );
-
-                if (result != null && result.files.single.path != null) {
-                  File file = File(result.files.single.path!);
-                  String ext = result.files.single.extension?.toLowerCase() ?? '';
-
-                  if (ext == 'pdf') {
-                    final PdfDocument doc = PdfDocument(inputBytes: await file.readAsBytes());
-                    String extracted = PdfTextExtractor(doc).extractText();
-                    doc.dispose();
-
-                    setState(() {
-                      _textController.text = extracted.isNotEmpty
-                          ? extracted
-                          : "This PDF contains scanned images. Standard text could not be extracted.";
-                    });
-                  } else {
-                    String content = await file.readAsString();
-                    setState(() {
-                      _textController.text = content;
-                    });
-                  }
-                  _speak();
-                }
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error opening file: $e')),
-                );
-              }
+            void _changeSpeed(double rate) {
+              setState(() => _speechRate = rate);
+              _tts.setSpeechRate(rate);
             }
 
             void _adjustFontSize(double change) {
@@ -178,11 +125,14 @@ jobs:
               });
             }
 
-            void _setRate(double rate) {
+            void _openBook(String title) {
+              _stop();
               setState(() {
-                _speechRate = rate;
+                _textController.text = _library[title] ?? '';
               });
-              _tts.setSpeechRate(rate);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Loaded: $title')),
+              );
             }
 
             @override
@@ -201,21 +151,21 @@ jobs:
                   backgroundColor: Colors.black,
                   actions: [
                     IconButton(
-                      icon: const Icon(Icons.remove, semanticLabel: 'Decrease Font Size'),
+                      icon: const Icon(Icons.text_decrease, semanticLabel: 'Decrease Font Size'),
                       onPressed: () => _adjustFontSize(-2.0),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.add, semanticLabel: 'Increase Font Size'),
+                      icon: const Icon(Icons.text_increase, semanticLabel: 'Increase Font Size'),
                       onPressed: () => _adjustFontSize(2.0),
                     ),
                     PopupMenuButton<double>(
                       icon: const Icon(Icons.speed, semanticLabel: 'Reading Speed'),
-                      onSelected: _setRate,
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(value: 0.35, child: Text('0.7x Slow')),
-                        const PopupMenuItem(value: 0.5, child: Text('1.0x Normal')),
-                        const PopupMenuItem(value: 0.75, child: Text('1.5x Fast')),
-                        const PopupMenuItem(value: 1.0, child: Text('2.0x Very Fast')),
+                      onSelected: _changeSpeed,
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(value: 0.35, child: Text('0.7x Slow')),
+                        PopupMenuItem(value: 0.5, child: Text('1.0x Normal')),
+                        PopupMenuItem(value: 0.75, child: Text('1.5x Fast')),
+                        PopupMenuItem(value: 1.0, child: Text('2.0x Very Fast')),
                       ],
                     ),
                   ],
@@ -238,19 +188,33 @@ jobs:
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
                         child: Row(
                           children: [
                             Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: _pickBookFile,
-                                icon: const Icon(Icons.folder_open, size: 24),
-                                label: const Text('Open PDF / Book', style: TextStyle(fontSize: 16)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF2A2A2A),
-                                  foregroundColor: Colors.white,
+                              child: PopupMenuButton<String>(
+                                onSelected: _openBook,
+                                child: Container(
                                   padding: const EdgeInsets.symmetric(vertical: 14),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF2A2A2A),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.menu_book, color: Color(0xFFFFC107)),
+                                      SizedBox(width: 8),
+                                      Text('Select Book / Chapter', style: TextStyle(fontSize: 16)),
+                                    ],
+                                  ),
                                 ),
+                                itemBuilder: (context) => _library.keys
+                                    .map((title) => PopupMenuItem(
+                                          value: title,
+                                          child: Text(title),
+                                        ))
+                                    .toList(),
                               ),
                             ),
                           ],
@@ -258,9 +222,9 @@ jobs:
                       ),
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 14.0),
                           child: Semantics(
-                            label: 'Book text reader surface',
+                            label: 'Reading text content',
                             child: TextField(
                               controller: _textController,
                               maxLines: null,
@@ -274,14 +238,14 @@ jobs:
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: const BorderSide(color: Color(0xFFFFC107), width: 2),
                                 ),
-                                hintText: 'Book content appears here...',
+                                hintText: 'Book or document content appears here...',
                               ),
                             ),
                           ),
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(14.0),
                         child: Row(
                           children: [
                             Expanded(
@@ -325,13 +289,13 @@ jobs:
           }
           EOF
 
-          # 6. Build fast Release APK
-          flutter build apk --release --no-tree-shake-icons
+          # 4. Build standard APK without crashing
+          flutter build apk --debug
 
       - name: Upload Accessible Reader APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: accessible-reader-apk
-          path: app/build/app/outputs/flutter-apk/*release*.apk
+          path: app/build/app/outputs/flutter-apk/*.apk
           
