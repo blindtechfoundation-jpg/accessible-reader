@@ -22,21 +22,52 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Build Accessible Reader APK
+      - name: Build Accessible Reader Release APK
         run: |
           set -e
-          # 1. Create clean project structure
+          # 1. Create clean project
           flutter create --org com.saifulla --project-name accessible_reader app
           cd app
 
-          # 2. Add stable text-to-speech engine
-          flutter pub add flutter_tts
+          # 2. Add required accessible reader packages
+          flutter pub add flutter_tts file_picker image_picker google_mlkit_text_recognition syncfusion_flutter_pdf
 
-          # 3. Inject full accessible reader app code
+          # 3. Add Android permissions
+          sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>' android/app/src/main/AndroidManifest.xml
+
+          # 4. Configure SDK & ProGuard rules to prevent R8 release crashes
+          find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/flutter.minSdkVersion/21/g' {} +
+          find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/flutter.compileSdkVersion/34/g' {} +
+          find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/flutter.targetSdkVersion/34/g' {} +
+          find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/minSdk = .*/minSdk = 21/g' {} +
+          find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/compileSdk = .*/compileSdk = 34/g' {} +
+
+          # Create ProGuard rules for ML Kit
+          mkdir -p android/app/proguard
+          cat << 'EOF' > android/app/proguard-rules.pro
+          -dontwarn com.google.mlkit.**
+          -keep class com.google.mlkit.** { *; }
+          -dontwarn com.google.android.gms.**
+          -keep class com.google.android.gms.** { *; }
+          EOF
+
+          # Inject ProGuard config into release build
+          if [ -f android/app/build.gradle.kts ]; then
+            sed -i '/isMinifyEnabled/d' android/app/build.gradle.kts
+            sed -i '/release {/a \            isMinifyEnabled = false\n            isShrinkResources = false' android/app/build.gradle.kts
+          elif [ -f android/app/build.gradle ]; then
+            sed -i '/release {/a \            minifyEnabled false\n            shrinkResources false' android/app/build.gradle
+          fi
+
+          # 5. Inject Complete Full-Featured Accessible Reader App
           cat << 'EOF' > lib/main.dart
+          import 'dart:io';
           import 'package:flutter/material.dart';
-          import 'package:flutter/semantics.dart';
           import 'package:flutter_tts/flutter_tts.dart';
+          import 'package:file_picker/file_picker.dart';
+          import 'package:image_picker/image_picker.dart';
+          import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+          import 'package:syncfusion_flutter_pdf/pdf.dart';
 
           void main() {
             runApp(const AccessibleReaderApp());
@@ -52,10 +83,10 @@ jobs:
                 debugShowCheckedModeBanner: false,
                 theme: ThemeData(
                   brightness: Brightness.dark,
-                  primarySwatch: Colors.amber,
-                  scaffoldBackgroundColor: const Color(0xFF121212),
-                  textTheme: const TextTheme(
-                    bodyLarge: TextStyle(fontSize: 22.0, color: Colors.white, height: 1.5),
+                  scaffoldBackgroundColor: const Color(0xFF101010),
+                  colorScheme: const ColorScheme.dark(
+                    primary: Color(0xFFFFC107),
+                    surface: Color(0xFF1E1E1E),
                   ),
                 ),
                 home: const ReaderHomeScreen(),
@@ -71,45 +102,120 @@ jobs:
           }
 
           class _ReaderHomeScreenState extends State<ReaderHomeScreen> {
-            final FlutterTts flutterTts = FlutterTts();
-            final TextEditingController _controller = TextEditingController();
-            bool isSpeaking = false;
+            final FlutterTts _tts = FlutterTts();
+            final TextEditingController _textController = TextEditingController();
+            final ImagePicker _picker = ImagePicker();
+
+            bool _isSpeaking = false;
+            double _speechRate = 0.5; // Normal speed in flutter_tts
 
             @override
             void initState() {
               super.initState();
               _initTts();
-              _controller.text =
-                  "Welcome to Accessible Reader, developed by Saifulla. Type or paste any text or book chapter here, then tap the Read Aloud button to listen.";
+              _textController.text =
+                  "Welcome to Accessible Reader, developed by Saifulla.\n\nUse the buttons below to open a PDF book, capture and read text from camera, or paste your notes.";
             }
 
             void _initTts() {
-              flutterTts.setStartHandler(() {
-                setState(() => isSpeaking = true);
-              });
-              flutterTts.setCompletionHandler(() {
-                setState(() => isSpeaking = false);
-              });
-              flutterTts.setErrorHandler((msg) {
-                setState(() => isSpeaking = false);
-              });
+              _tts.setStartHandler(() => setState(() => _isSpeaking = true));
+              _tts.setCompletionHandler(() => setState(() => _isSpeaking = false));
+              _tts.setErrorHandler((msg) => setState(() => _isSpeaking = false));
+              _tts.setSpeechRate(_speechRate);
             }
 
             Future<void> _speak() async {
-              if (_controller.text.isNotEmpty) {
-                await flutterTts.speak(_controller.text);
+              if (_textController.text.trim().isNotEmpty) {
+                await _tts.stop();
+                await _tts.setSpeechRate(_speechRate);
+                await _tts.speak(_textController.text);
               }
             }
 
             Future<void> _stop() async {
-              await flutterTts.stop();
-              setState(() => isSpeaking = false);
+              await _tts.stop();
+              setState(() => _isSpeaking = false);
+            }
+
+            Future<void> _pickDocument() async {
+              try {
+                FilePickerResult? result = await FilePicker.platform.pickFiles(
+                  type: FileType.custom,
+                  allowedExtensions: ['pdf', 'txt'],
+                );
+
+                if (result != null && result.files.single.path != null) {
+                  File file = File(result.files.single.path!);
+                  String ext = result.files.single.extension?.toLowerCase() ?? '';
+
+                  if (ext == 'pdf') {
+                    final PdfDocument document = PdfDocument(inputBytes: await file.readAsBytes());
+                    String extractedText = PdfTextExtractor(document).extractText();
+                    document.dispose();
+                    setState(() {
+                      _textController.text = extractedText.isNotEmpty
+                          ? extractedText
+                          : "This PDF contains scanned image pages. Use the Scan Image feature to read its text.";
+                    });
+                  } else {
+                    String content = await file.readAsString();
+                    setState(() {
+                      _textController.text = content;
+                    });
+                  }
+                  _speak();
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Could not read file: $e')),
+                );
+              }
+            }
+
+            Future<void> _scanImage(ImageSource source) async {
+              try {
+                final XFile? photo = await _picker.pickImage(source: source);
+                if (photo == null) return;
+
+                final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+                final inputImage = InputImage.fromFilePath(photo.path);
+                final RecognizedText recognized = await textRecognizer.processImage(inputImage);
+                await textRecognizer.close();
+
+                if (recognized.text.trim().isNotEmpty) {
+                  setState(() {
+                    _textController.text = recognized.text;
+                  });
+                  _speak();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('No text recognized in image')),
+                  );
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error scanning text: $e')),
+                );
+              }
+            }
+
+            void _adjustSpeed(double delta) {
+              setState(() {
+                _speechRate = (_speechRate + delta).clamp(0.2, 1.0);
+              });
+              _tts.setSpeechRate(_speechRate);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Speech rate: ${(_speechRate * 2).toStringAsFixed(1)}x'),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
             }
 
             @override
             void dispose() {
-              flutterTts.stop();
-              _controller.dispose();
+              _tts.stop();
+              _textController.dispose();
               super.dispose();
             }
 
@@ -120,94 +226,119 @@ jobs:
                   title: const Text('Accessible Reader'),
                   centerTitle: true,
                   backgroundColor: Colors.black,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.speed),
+                      tooltip: 'Faster reading speed',
+                      onPressed: () => _adjustSpeed(0.1),
+                    ),
+                  ],
                 ),
-                body: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                body: SafeArea(
                   child: Column(
                     children: [
-                      Semantics(
-                        label: 'Developer credit: Developed by Saifulla',
+                      // Developer Credit Header
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        color: Colors.black26,
                         child: const Text(
                           'Developed by Saifulla',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.amber,
-                            fontSize: 16.0,
+                            color: Color(0xFFFFC107),
                             fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 15),
+
+                      // Document & Scanner Toolbar
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _pickDocument,
+                                icon: const Icon(Icons.picture_as_pdf),
+                                label: const Text('Open PDF / Book', style: TextStyle(fontSize: 15)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF2A2A2A),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => _scanImage(ImageSource.camera),
+                                icon: const Icon(Icons.camera_alt),
+                                label: const Text('Scan Page', style: TextStyle(fontSize: 15)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF2A2A2A),
+                                  foregroundColor: const Color(0xFFFFC107),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Main Accessible Reading Surface
                       Expanded(
-                        child: Semantics(
-                          label: 'Text content area',
-                          hint: 'Enter or read book text here',
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14.0),
                           child: TextField(
-                            controller: _controller,
+                            controller: _textController,
                             maxLines: null,
                             expands: true,
                             keyboardType: TextInputType.multiline,
-                            style: const TextStyle(fontSize: 20.0, color: Colors.white),
+                            style: const TextStyle(fontSize: 22, height: 1.6, color: Colors.white),
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: const Color(0xFF1E1E1E),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Colors.amber, width: 2),
+                                borderSide: const BorderSide(color: Color(0xFFFFC107), width: 2),
                               ),
-                              hintText: 'Enter text here...',
-                              hintStyle: const TextStyle(color: Colors.white54),
+                              hintText: 'Book content will appear here...',
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Semantics(
-                            button: true,
-                            label: isSpeaking ? 'Stop Reading' : 'Read Aloud',
-                            child: ElevatedButton.icon(
-                              onPressed: isSpeaking ? _stop : _speak,
-                              icon: Icon(
-                                isSpeaking ? Icons.stop : Icons.play_arrow,
-                                size: 32,
-                              ),
-                              label: Text(
-                                isSpeaking ? 'Stop' : 'Read Aloud',
-                                style: const TextStyle(fontSize: 20),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.amber,
-                                foregroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 16,
+
+                      // Audio Playback Controls
+                      Padding(
+                        padding: const EdgeInsets.all(14.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: ElevatedButton.icon(
+                                onPressed: _isSpeaking ? _stop : _speak,
+                                icon: Icon(_isSpeaking ? Icons.pause_circle_filled : Icons.play_circle_fill, size: 28),
+                                label: Text(_isSpeaking ? 'Stop Reading' : 'Read Aloud', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFFC107),
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
                                 ),
                               ),
                             ),
-                          ),
-                          Semantics(
-                            button: true,
-                            label: 'Clear text',
-                            child: OutlinedButton.icon(
+                            const SizedBox(width: 12),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 30),
+                              tooltip: 'Clear Text',
                               onPressed: () {
-                                _controller.clear();
                                 _stop();
+                                _textController.clear();
                               },
-                              icon: const Icon(Icons.clear, size: 28),
-                              label: const Text('Clear', style: TextStyle(fontSize: 18)),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                side: const BorderSide(color: Colors.white54),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 16,
-                                ),
-                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -217,13 +348,13 @@ jobs:
           }
           EOF
 
-          # 4. Build standard debug APK
-          flutter build apk --debug
+          # 6. Build fast, optimized Release APK (minification disabled to prevent crashes)
+          flutter build apk --release --no-tree-shake-icons
 
-      - name: Upload Accessible Reader APK
+      - name: Upload Accessible Reader Release APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: accessible-reader-apk
-          path: app/build/app/outputs/flutter-apk/*.apk
+          name: accessible-reader-release-apk
+          path: app/build/app/outputs/flutter-apk/*release*.apk
           
