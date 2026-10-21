@@ -22,42 +22,40 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Build Full Accessible Reader Release APK
+      - name: Build Accessible Reader Release APK
         run: |
           set -e
-          # 1. Initialize project
+          # 1. Create clean project
           flutter create --org com.saifulla --project-name accessible_reader app
           cd app
 
-          # 2. Add stable accessibility, file picking, and OCR packages
-          flutter pub add flutter_tts file_picker image_picker google_mlkit_text_recognition syncfusion_flutter_pdf
+          # 2. Add stable accessibility & pure-dart PDF reader packages
+          flutter pub add flutter_tts file_picker syncfusion_flutter_pdf
 
-          # 3. Add Android permissions for Camera and File access
-          sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>' android/app/src/main/AndroidManifest.xml
+          # 3. Add storage permissions to AndroidManifest
+          sed -i '/<application/i \    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>' android/app/src/main/AndroidManifest.xml
 
-          # 4. Configure SDK versions cleanly for modern Android
+          # 4. Safe Gradle config
           find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/flutter.minSdkVersion/21/g' {} +
           find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/flutter.compileSdkVersion/34/g' {} +
           find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/flutter.targetSdkVersion/34/g' {} +
           find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/minSdk = .*/minSdk = 21/g' {} +
           find android -type f \( -name "*build.gradle*" \) -exec sed -i 's/compileSdk = .*/compileSdk = 34/g' {} +
 
-          # 5. Disable code shrinking to ensure ML Kit & PDF plugins build reliably
+          # Disable code shrinker to avoid release crashes
           if [ -f android/app/build.gradle.kts ]; then
             sed -i '/release {/a \            isMinifyEnabled = false\n            isShrinkResources = false' android/app/build.gradle.kts
           elif [ -f android/app/build.gradle ]; then
             sed -i '/release {/a \            minifyEnabled false\n            shrinkResources false' android/app/build.gradle
           fi
 
-          # 6. Inject Full-Featured Accessible Reader App
+          # 5. Full Accessible Reader Code
           cat << 'EOF' > lib/main.dart
           import 'dart:io';
           import 'package:flutter/material.dart';
           import 'package:flutter/semantics.dart';
           import 'package:flutter_tts/flutter_tts.dart';
           import 'package:file_picker/file_picker.dart';
-          import 'package:image_picker/image_picker.dart';
-          import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
           import 'package:syncfusion_flutter_pdf/pdf.dart';
 
           void main() {
@@ -95,17 +93,27 @@ jobs:
           class _ReaderHomeScreenState extends State<ReaderHomeScreen> {
             final FlutterTts _tts = FlutterTts();
             final TextEditingController _textController = TextEditingController();
-            final ImagePicker _picker = ImagePicker();
 
             bool _isSpeaking = false;
+            double _fontSize = 22.0;
             double _speechRate = 0.5;
 
             @override
             void initState() {
               super.initState();
               _initTts();
+              _loadWelcomeMessage();
+            }
+
+            void _loadWelcomeMessage() {
               _textController.text =
-                  "Welcome to Accessible Reader, developed by Saifulla.\n\nTap 'Open Book / PDF' to read downloaded documents, or tap 'Scan Page' to use your camera and recognize printed text.";
+                  "Welcome to Accessible Reader, developed by Saifulla.\n\n"
+                  "Features included in this app:\n"
+                  "1. Open PDF & Book: Tap the button at the top to load any PDF book or TXT document.\n"
+                  "2. Text-to-Speech: Tap 'Read Aloud' to listen to any text or book chapter.\n"
+                  "3. Font Size: Use the plus (+) and minus (-) buttons on the top bar to adjust text size.\n"
+                  "4. Speed Control: Tap the speed icon on the top bar to choose between slow, normal, or fast reading.\n"
+                  "5. Type or paste your own notes directly into this box at any time.";
             }
 
             void _initTts() {
@@ -128,7 +136,7 @@ jobs:
               setState(() => _isSpeaking = false);
             }
 
-            Future<void> _pickDocument() async {
+            Future<void> _pickBookFile() async {
               try {
                 FilePickerResult? result = await FilePicker.platform.pickFiles(
                   type: FileType.custom,
@@ -140,13 +148,14 @@ jobs:
                   String ext = result.files.single.extension?.toLowerCase() ?? '';
 
                   if (ext == 'pdf') {
-                    final PdfDocument document = PdfDocument(inputBytes: await file.readAsBytes());
-                    String extractedText = PdfTextExtractor(document).extractText();
-                    document.dispose();
+                    final PdfDocument doc = PdfDocument(inputBytes: await file.readAsBytes());
+                    String extracted = PdfTextExtractor(doc).extractText();
+                    doc.dispose();
+
                     setState(() {
-                      _textController.text = extractedText.isNotEmpty
-                          ? extractedText
-                          : "This PDF contains scanned images instead of selectable text. Use Scan Page to read printed text.";
+                      _textController.text = extracted.isNotEmpty
+                          ? extracted
+                          : "This PDF contains scanned images. Standard text could not be extracted.";
                     });
                   } else {
                     String content = await file.readAsString();
@@ -158,39 +167,18 @@ jobs:
                 }
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Could not open file: $e')),
+                  SnackBar(content: Text('Error opening file: $e')),
                 );
               }
             }
 
-            Future<void> _scanPage(ImageSource source) async {
-              try {
-                final XFile? photo = await _picker.pickImage(source: source);
-                if (photo == null) return;
-
-                final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
-                final inputImage = InputImage.fromFilePath(photo.path);
-                final RecognizedText recognized = await textRecognizer.processImage(inputImage);
-                await textRecognizer.close();
-
-                if (recognized.text.trim().isNotEmpty) {
-                  setState(() {
-                    _textController.text = recognized.text;
-                  });
-                  _speak();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('No readable text found in image')),
-                  );
-                }
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Scan error: $e')),
-                );
-              }
+            void _adjustFontSize(double change) {
+              setState(() {
+                _fontSize = (_fontSize + change).clamp(16.0, 36.0);
+              });
             }
 
-            void _changeSpeed(double rate) {
+            void _setRate(double rate) {
               setState(() {
                 _speechRate = rate;
               });
@@ -212,9 +200,17 @@ jobs:
                   centerTitle: true,
                   backgroundColor: Colors.black,
                   actions: [
+                    IconButton(
+                      icon: const Icon(Icons.remove, semanticLabel: 'Decrease Font Size'),
+                      onPressed: () => _adjustFontSize(-2.0),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add, semanticLabel: 'Increase Font Size'),
+                      onPressed: () => _adjustFontSize(2.0),
+                    ),
                     PopupMenuButton<double>(
                       icon: const Icon(Icons.speed, semanticLabel: 'Reading Speed'),
-                      onSelected: _changeSpeed,
+                      onSelected: _setRate,
                       itemBuilder: (context) => [
                         const PopupMenuItem(value: 0.35, child: Text('0.7x Slow')),
                         const PopupMenuItem(value: 0.5, child: Text('1.0x Normal')),
@@ -247,25 +243,12 @@ jobs:
                           children: [
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: _pickDocument,
-                                icon: const Icon(Icons.picture_as_pdf),
-                                label: const Text('Open PDF', style: TextStyle(fontSize: 16)),
+                                onPressed: _pickBookFile,
+                                icon: const Icon(Icons.folder_open, size: 24),
+                                label: const Text('Open PDF / Book', style: TextStyle(fontSize: 16)),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF2A2A2A),
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _scanPage(ImageSource.camera),
-                                icon: const Icon(Icons.camera_alt),
-                                label: const Text('Scan Page', style: TextStyle(fontSize: 16)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF2A2A2A),
-                                  foregroundColor: const Color(0xFFFFC107),
                                   padding: const EdgeInsets.symmetric(vertical: 14),
                                 ),
                               ),
@@ -275,15 +258,15 @@ jobs:
                       ),
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: Semantics(
-                            label: 'Reading text content',
+                            label: 'Book text reader surface',
                             child: TextField(
                               controller: _textController,
                               maxLines: null,
                               expands: true,
                               keyboardType: TextInputType.multiline,
-                              style: const TextStyle(fontSize: 22, height: 1.6, color: Colors.white),
+                              style: TextStyle(fontSize: _fontSize, height: 1.6, color: Colors.white),
                               decoration: InputDecoration(
                                 filled: true,
                                 fillColor: const Color(0xFF1E1E1E),
@@ -291,7 +274,7 @@ jobs:
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: const BorderSide(color: Color(0xFFFFC107), width: 2),
                                 ),
-                                hintText: 'Book or document content appears here...',
+                                hintText: 'Book content appears here...',
                               ),
                             ),
                           ),
@@ -342,13 +325,13 @@ jobs:
           }
           EOF
 
-          # 7. Build release APK
+          # 6. Build fast Release APK
           flutter build apk --release --no-tree-shake-icons
 
       - name: Upload Accessible Reader APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: accessible-reader-release-apk
+          name: accessible-reader-apk
           path: app/build/app/outputs/flutter-apk/*release*.apk
           
