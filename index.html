@@ -5,26 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>accessible_reader</title>
 
-  <!-- PDF & OCR Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
   <style>
     :root {
       --bg: #000000;
-      --card: #181818;
+      --card: #141414;
       --accent: #ffcc00;
       --accent-active: #e6b800;
       --text: #ffffff;
-      --border: #383838;
+      --border: #333333;
       --danger: #ff4444;
+      --success: #00e676;
     }
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
       font-family: system-ui, -apple-system, Roboto, Arial, sans-serif;
-      -webkit-tap-highlight-color: rgba(255, 204, 0, 0.2);
+      -webkit-tap-highlight-color: rgba(255, 204, 0, 0.3);
     }
     body {
       background-color: var(--bg);
@@ -35,473 +32,600 @@
       min-height: 100vh;
     }
 
-    /* Welcome Card */
-    #welcome-card {
-      display: block;
-      max-width: 440px;
-      margin: 20px auto;
+    /* Welcome / Splash Screen */
+    #splash-screen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 90vh;
+      text-align: center;
+      padding: 16px;
+    }
+    .splash-card {
       background-color: var(--card);
       border: 3px solid var(--accent);
-      border-radius: 14px;
-      padding: 24px 18px;
-      text-align: center;
+      border-radius: 16px;
+      padding: 30px 20px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.8);
     }
-    #welcome-card h1 { color: var(--accent); font-size: 1.8rem; margin-bottom: 16px; }
-    .time-box { background-color: #000000; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 20px; }
-    .date-text { color: #dddddd; font-size: 1.15rem; margin-bottom: 6px; }
-    .time-text { color: var(--accent); font-size: 1.7rem; font-weight: 800; }
-    .dev-info { font-size: 1.25rem; margin-bottom: 24px; }
-    .dev-name { display: block; color: var(--accent); font-size: 1.85rem; font-weight: 900; margin-top: 4px; }
-    
-    .btn-next-action {
+    .splash-card h1 {
+      color: var(--accent);
+      font-size: 1.9rem;
+      margin-bottom: 16px;
+      letter-spacing: 0.5px;
+    }
+    .time-badge {
+      background-color: #000000;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 22px;
+    }
+    .date-display {
+      font-size: 1.1rem;
+      color: #cccccc;
+      margin-bottom: 6px;
+    }
+    .time-display {
+      font-size: 1.6rem;
+      color: var(--accent);
+      font-weight: 800;
+    }
+    .developer-info {
+      font-size: 1.25rem;
+      margin-bottom: 26px;
+      color: #dddddd;
+    }
+    .developer-name {
+      display: block;
+      color: var(--accent);
+      font-size: 1.9rem;
+      font-weight: 900;
+      margin-top: 4px;
+    }
+    .btn-start {
       width: 100%;
       background-color: var(--accent);
       color: #000000;
       border: none;
-      padding: 16px;
-      border-radius: 10px;
-      font-size: 1.45rem;
+      padding: 18px;
+      border-radius: 12px;
+      font-size: 1.4rem;
       font-weight: 900;
       cursor: pointer;
     }
-    .btn-next-action:active { background-color: var(--accent-active); }
+    .btn-start:active {
+      background-color: var(--accent-active);
+      transform: scale(0.98);
+    }
 
-    /* Main Hub Grid */
-    #main-hub {
+    /* Main App Workspace */
+    #app-container {
       display: none;
       max-width: 600px;
       margin: 0 auto;
       padding-bottom: 40px;
     }
-    header { text-align: center; border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 16px; }
-    header h2 { color: var(--accent); font-size: 1.6rem; }
-    
-    .hub-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-    .hub-card {
-      background-color: var(--card);
-      border: 2px solid var(--accent);
-      border-radius: 12px;
-      padding: 20px;
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: var(--text);
-      cursor: pointer;
-      text-align: left;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 70px;
-    }
-    .hub-card:active {
-      background-color: var(--accent);
-      color: #000000;
-    }
-
-    /* Dedicated Window Modals */
-    .window-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background-color: #000000;
-      z-index: 99999;
-      overflow-y: auto;
-      padding: 16px;
-    }
-    .window-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    header {
+      text-align: center;
       border-bottom: 2px solid var(--accent);
       padding-bottom: 10px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
-    .window-title {
+    header h2 {
       color: var(--accent);
-      font-size: 1.4rem;
-      font-weight: bold;
+      font-size: 1.6rem;
     }
-    .btn-close-window {
-      background-color: var(--danger);
-      color: #ffffff;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
+
+    /* Tab Navigation */
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+    .nav-tabs::-webkit-scrollbar {
+      display: none;
+    }
+    .tab-btn {
+      flex: 0 0 auto;
+      background-color: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      border-radius: 10px;
       font-size: 1.05rem;
       font-weight: bold;
       cursor: pointer;
     }
-
-    /* Shared UI Elements */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-    button, label.btn-action {
-      display: flex; align-items: center; justify-content: center;
-      background-color: var(--card); color: var(--text);
-      border: 2px solid var(--accent); border-radius: 8px;
-      padding: 14px 8px; font-size: 1.05rem; font-weight: bold;
-      cursor: pointer; text-align: center; min-height: 52px;
+    .tab-btn.active {
+      background-color: var(--accent);
+      color: #000000;
+      border-color: var(--accent);
     }
-    button:active, label.btn-action:active { background-color: var(--accent); color: #000000; }
-    .btn-gold { background-color: var(--accent); color: #000000; }
-    .btn-red { border-color: var(--danger); color: var(--danger); }
-    .full-btn { width: 100%; margin-bottom: 10px; }
-    input[type="file"] { display: none; }
 
-    .settings-row { display: flex; align-items: center; justify-content: space-between; background-color: var(--card); border: 1px solid var(--border); padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; }
-    select, input[type="text"] { background: #000000; color: var(--accent); border: 1px solid var(--accent); padding: 8px 12px; border-radius: 6px; font-size: 1rem; font-weight: bold; }
-    input[type="text"] { width: 100%; color: #ffffff; margin-bottom: 10px; }
+    .app-panel {
+      display: none;
+    }
+    .app-panel.active {
+      display: block;
+    }
 
-    #status-bar { text-align: center; color: var(--accent); font-weight: bold; font-size: 1.05rem; margin-bottom: 12px; min-height: 26px; }
+    /* Common Components */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    button, label.action-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--card);
+      color: var(--text);
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      padding: 16px 10px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      min-height: 56px;
+    }
+    button:active, label.action-trigger:active {
+      background-color: var(--accent);
+      color: #000000;
+    }
+    .btn-gold {
+      background-color: var(--accent);
+      color: #000000;
+    }
+    .btn-alert {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+    .full-width {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+    input[type="file"] {
+      display: none;
+    }
 
-    textarea { width: 100%; height: 220px; background-color: var(--card); color: var(--text); border: 2px solid var(--border); border-radius: 8px; padding: 12px; font-size: 1.15rem; line-height: 1.5; resize: vertical; margin-bottom: 12px; }
-    
-    .info-card { background-color: var(--card); border: 2px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; text-align: center; }
-    .metric-disp { font-size: 1.8rem; color: var(--accent); font-weight: bold; margin: 8px 0; }
-    
-    .calc-box { background-color: #000000; border: 2px solid var(--accent); color: var(--accent); font-size: 2rem; text-align: right; padding: 14px; border-radius: 8px; margin-bottom: 12px; min-height: 60px; word-break: break-all; }
-    .calc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-    .calc-keys button { min-height: 56px; font-size: 1.35rem; }
-    .remind-row { padding: 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; text-align: left; }
+    .options-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+    select, input[type="text"] {
+      background-color: #000000;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      width: 100%;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+
+    #live-status {
+      text-align: center;
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 1.15rem;
+      margin-bottom: 12px;
+      min-height: 30px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 240px;
+      background-color: var(--card);
+      color: var(--text);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 1.2rem;
+      line-height: 1.6;
+      resize: vertical;
+      margin-bottom: 12px;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .stat-card {
+      background-color: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.9rem;
+      color: var(--accent);
+      font-weight: bold;
+      margin: 8px 0;
+    }
+
+    .calc-screen {
+      background-color: #000000;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      font-size: 2.2rem;
+      text-align: right;
+      padding: 16px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      min-height: 70px;
+      word-break: break-all;
+    }
+    .calc-keypad {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .calc-keypad button {
+      min-height: 60px;
+      font-size: 1.4rem;
+    }
+    .task-row {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+    }
   </style>
 
   <script>
-    // Initialize baseline history state on load
-    window.addEventListener('DOMContentLoaded', function() {
-      refreshClock();
-      try {
-        history.replaceState({ page: 'hub' }, '', '');
-      } catch (e) {}
-    });
-
-    function refreshClock() {
+    // Live Clock Engine
+    function updateAppClock() {
       const now = new Date();
-      const d = document.getElementById('live-date-val');
-      const t = document.getElementById('live-time-val');
+      const d = document.getElementById('splash-date');
+      const t = document.getElementById('splash-time');
       if (d) d.innerText = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       if (t) t.innerText = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
     }
-    setInterval(refreshClock, 1000);
+    setInterval(updateAppClock, 1000);
+    window.addEventListener('DOMContentLoaded', updateAppClock);
 
-    function launchMainHub() {
-      document.getElementById('welcome-card').style.display = 'none';
-      document.getElementById('main-hub').style.display = 'block';
-      speakText('Welcome to accessible reader.');
+    // Launch App
+    function startApplication() {
+      document.getElementById('splash-screen').style.display = 'none';
+      document.getElementById('app-container').style.display = 'block';
+      speakAudio('Welcome to accessible reader.');
     }
 
-    let activeWindowId = null;
+    // Switch Tabs
+    function switchTab(panelId, btn) {
+      document.querySelectorAll('.app-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      
+      const target = document.getElementById(panelId);
+      if (target) target.classList.add('active');
+      if (btn) btn.classList.add('active');
 
-    function openWindow(windowId, title) {
-      document.querySelectorAll('.window-modal').forEach(w => w.style.display = 'none');
-      const target = document.getElementById(windowId);
-      if (target) {
-        target.style.display = 'block';
-        activeWindowId = windowId;
-        // Push state so back gesture closes modal instead of exiting app
-        try {
-          history.pushState({ modalOpen: true, id: windowId }, '', '');
-        } catch (e) {}
-        setAppStatus(title);
-        speakText(title);
-      }
+      const name = btn ? btn.innerText : '';
+      setStatus(name);
+      speakAudio(name);
     }
 
-    function closeWindow(windowId) {
-      stopSpeaking();
-      const target = document.getElementById(windowId);
-      if (target) {
-        target.style.display = 'none';
-        activeWindowId = null;
-        setAppStatus('Ready');
-        speakText('Closed window');
-      }
+    function setStatus(msg) {
+      const st = document.getElementById('live-status');
+      if (st) st.innerText = msg;
     }
 
-    // Bulletproof back-button interceptor
-    window.addEventListener('popstate', function(event) {
-      if (activeWindowId) {
-        const modal = document.getElementById(activeWindowId);
-        if (modal) {
-          modal.style.display = 'none';
-        }
-        activeWindowId = null;
-        stopSpeaking();
-        setAppStatus('Ready');
-        speakText('Closed window');
-        // Push state back so app remains stable
-        try {
-          history.pushState({ page: 'hub' }, '', '');
-        } catch (e) {}
-      }
-    });
-
-    function setAppStatus(msg) {
-      const s = document.getElementById('status-bar');
-      if (s) s.innerText = msg;
-    }
-
+    // Robust Dual TTS Engine (Native + Cloud Audio Fallback)
     let audioQueue = [];
-    let currentCloudAudio = null;
+    let activeAudioStream = null;
 
-    function stopSpeaking() {
+    function stopAudio() {
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      if (currentCloudAudio) {
-        currentCloudAudio.pause();
-        currentCloudAudio = null;
+      if (activeAudioStream) {
+        activeAudioStream.pause();
+        activeAudioStream = null;
       }
       audioQueue = [];
-      setAppStatus('Stopped playback.');
+      setStatus('Playback stopped.');
     }
 
-    function playCloudAudio() {
+    function playQueueStream() {
       if (audioQueue.length === 0) {
-        setAppStatus('Finished reading.');
+        setStatus('Finished reading.');
         return;
       }
-      const url = audioQueue.shift();
-      currentCloudAudio = new Audio(url);
-      currentCloudAudio.onended = playCloudAudio;
-      currentCloudAudio.onerror = playCloudAudio; 
-      currentCloudAudio.play();
+      const streamUrl = audioQueue.shift();
+      activeAudioStream = new Audio(streamUrl);
+      activeAudioStream.onended = playQueueStream;
+      activeAudioStream.onerror = playQueueStream;
+      activeAudioStream.play();
     }
 
-    function speakText(txt) {
+    function speakAudio(txt) {
       if (!txt) return;
-      stopSpeaking();
+      stopAudio();
       if ('speechSynthesis' in window && typeof window.speechSynthesis.speak === 'function') {
         setTimeout(() => {
-          const u = new SpeechSynthesisUtterance(txt);
-          const rateSelect = document.getElementById('speech-rate');
-          u.rate = parseFloat(rateSelect ? rateSelect.value : 1.0) || 1.0;
-          window.speechSynthesis.speak(u);
-        }, 50);
+          const utterance = new SpeechSynthesisUtterance(txt);
+          const rateBox = document.getElementById('speech-speed');
+          utterance.rate = parseFloat(rateBox ? rateBox.value : 1.0) || 1.0;
+          window.speechSynthesis.speak(utterance);
+        }, 40);
       } else {
-        const chunks = txt.match(/.{1,150}(\s|$)|.{1,150}/g) || [txt];
-        audioQueue = chunks.map(c => `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=${encodeURIComponent(c.trim())}`);
-        playCloudAudio();
+        const textChunks = txt.match(/.{1,150}(\s|$)|.{1,150}/g) || [txt];
+        audioQueue = textChunks.map(chunk => `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=${encodeURIComponent(chunk.trim())}`);
+        playQueueStream();
       }
     }
   </script>
 </head>
 <body>
 
-  <!-- WELCOME SCREEN -->
-  <div id="welcome-card">
-    <h1>accessible_reader</h1>
-    <div class="time-box">
-      <div id="live-date-val" class="date-text">Loading date...</div>
-      <div id="live-time-val" class="time-text">--:--:--</div>
-    </div>
-    <div class="dev-info">Developed by <span class="dev-name">Saifulla</span></div>
-    <button type="button" class="btn-next-action" onclick="launchMainHub()">Next ▶</button>
-  </div>
+  <!-- SPLASH / WELCOME SCREEN -->
+  <div id="splash-screen">
+    <div class="splash-card">
+      <h1>accessible_reader</h1>
+      
+      <div class="time-badge">
+        <div id="splash-date" class="date-display">Loading date...</div>
+        <div id="splash-time" class="time-display">--:--:--</div>
+      </div>
 
-  <!-- MAIN HUB MENU -->
-  <div id="main-hub">
-    <header role="banner"><h2>accessible_reader</h2></header>
-    <div id="status-bar" role="status" aria-live="polite">Ready</div>
+      <div class="developer-info">
+        Developed by
+        <span class="developer-name">Saifulla</span>
+      </div>
 
-    <div class="hub-grid">
-      <button type="button" class="hub-card" onclick="openWindow('win-reader', 'Document & PDF Reader')">
-        <span>📖 Reader & OCR</span> ▶
-      </button>
-      <button type="button" class="hub-card" onclick="openWindow('win-ai', 'AI Tech Assistant')">
-        <span>🤖 AI Assistant</span> ▶
-      </button>
-      <button type="button" class="hub-card" onclick="openWindow('win-sensors', 'Tactile Compass & Light')">
-        <span>🧭 Sensors & Compass</span> ▶
-      </button>
-      <button type="button" class="hub-card" onclick="openWindow('win-calc', 'Talking Calculator')">
-        <span>🧮 Talking Calculator</span> ▶
-      </button>
-      <button type="button" class="hub-card" onclick="openWindow('win-tools', 'Daily Tools & Battery')">
-        <span>🛠 Daily Tools & Reminders</span> ▶
-      </button>
+      <button type="button" class="btn-start" onclick="startApplication()">Next ▶</button>
     </div>
   </div>
 
+  <!-- MAIN APP CONTAINER -->
+  <div id="app-container">
+    <header role="banner">
+      <h2>accessible_reader</h2>
+    </header>
 
-  <!-- ================= DEDICATED WINDOW 1: READER & OCR ================= -->
-  <div id="win-reader" class="window-modal">
-    <div class="window-header">
-      <div class="window-title">📖 Reader & OCR</div>
-      <button type="button" class="btn-close-window" onclick="closeWindow('win-reader')">✖ Close Window</button>
-    </div>
+    <nav class="nav-tabs" aria-label="Feature navigation">
+      <button type="button" class="tab-btn active" onclick="switchTab('panel-reader', this)">📖 Reader</button>
+      <button type="button" class="tab-btn" onclick="switchTab('panel-ai', this)">🤖 AI Assistant</button>
+      <button type="button" class="tab-btn" onclick="switchTab('panel-sensors', this)">🧭 Sensors</button>
+      <button type="button" class="tab-btn" onclick="switchTab('panel-calc', this)">🧮 Calculator</button>
+      <button type="button" class="tab-btn" onclick="switchTab('panel-tools', this)">🛠 Tools</button>
+    </nav>
 
-    <div class="grid-2">
-      <label class="btn-action" for="doc-picker" tabindex="0">📄 Open PDF/Text</label>
-      <input type="file" id="doc-picker" accept=".txt,.csv,.json,.html,.pdf" onchange="loadFileContent(event)" />
-      <label class="btn-action" for="camera-picker" tabindex="0">📷 Scan Photo</label>
-      <input type="file" id="camera-picker" accept="image/*" onchange="loadPhotoContent(event)" />
-    </div>
+    <div id="live-status" role="status" aria-live="polite">Ready</div>
 
-    <div class="settings-row">
-      <label for="speech-rate"><strong>Speed:</strong></label>
-      <select id="speech-rate">
-        <option value="1.0" selected>1.0x Normal</option>
-        <option value="1.5">1.5x Fast</option>
-      </select>
-    </div>
+    <!-- TAB 1: READER -->
+    <section id="panel-reader" class="app-panel active">
+      <div class="grid-2">
+        <label class="action-trigger" for="file-input-box" tabindex="0">📄 Open Document</label>
+        <input type="file" id="file-input-box" accept=".txt,.csv,.json,.html" onchange="handleFileOpen(event)" />
+        <label class="action-trigger" for="cam-input-box" tabindex="0">📷 Camera / Photo</label>
+        <input type="file" id="cam-input-box" accept="image/*" onchange="handlePhotoScan(event)" />
+      </div>
 
-    <textarea id="reading-content" placeholder="Document text will appear here...">Welcome to accessible_reader.
-• Tap 'Open PDF/Text' to load documents.
-• Tap 'Scan Photo' to extract OCR text.
-• Tap 'Read Aloud' to listen.</textarea>
+      <div class="options-row">
+        <label for="speech-speed"><strong>Reading Speed:</strong></label>
+        <select id="speech-speed">
+          <option value="1.0" selected>1.0x Normal</option>
+          <option value="1.5">1.5x Fast</option>
+        </select>
+      </div>
 
-    <div class="grid-2">
-      <button type="button" class="btn-gold" onclick="readMainText()">▶ Read Aloud</button>
-      <button type="button" onclick="stopSpeaking()">⏹ Stop</button>
-    </div>
-    <div class="grid-2">
-      <button type="button" onclick="copyMainText()">📋 Copy Text</button>
-      <button type="button" class="btn-red" onclick="clearMainText()">✖ Clear</button>
-    </div>
+      <textarea id="text-editor-box" placeholder="Document text will appear here...">Welcome to accessible_reader.
+
+• Tap 'Open Document' to read text files.
+• Tap 'Camera / Photo' to inspect images.
+• Tap 'Read Aloud' to listen to text.</textarea>
+
+      <div class="grid-2">
+        <button type="button" class="btn-gold" onclick="readWorkspaceText()">▶ Read Aloud</button>
+        <button type="button" onclick="stopAudio()">⏹ Stop</button>
+      </div>
+      <div class="grid-2">
+        <button type="button" onclick="copyWorkspaceText()">📋 Copy Text</button>
+        <button type="button" class="btn-alert" onclick="clearWorkspaceText()">✖ Clear</button>
+      </div>
+    </section>
+
+    <!-- TAB 2: AI ASSISTANT -->
+    <section id="panel-ai" class="app-panel">
+      <input type="text" id="ai-user-prompt" placeholder="Ask AI a question..." />
+      <div class="grid-2">
+        <button type="button" class="btn-gold" onclick="triggerAIAssistant()">💬 Ask AI</button>
+        <button type="button" onclick="summarizeWorkspace()">📝 Summarize Reader</button>
+      </div>
+      <textarea id="ai-response-box" placeholder="AI responses and summaries will appear here..."></textarea>
+      <button type="button" class="full-btn" onclick="document.getElementById('ai-response-box').value=''; speakAudio('Cleared.')">Clear AI Output</button>
+    </section>
+
+    <!-- TAB 3: SENSORS -->
+    <section id="panel-sensors" class="app-panel">
+      <div class="stat-card">
+        <div><strong>Tactile Compass</strong></div>
+        <div id="comp-deg" class="stat-value">--°</div>
+        <div id="comp-name">Detecting orientation...</div>
+      </div>
+      <button type="button" class="full-btn btn-gold" onclick="speakAudio(document.getElementById('comp-deg').innerText + ', facing ' + document.getElementById('comp-name').innerText)">📢 Announce Compass</button>
+    </section>
+
+    <!-- TAB 4: CALCULATOR -->
+    <section id="panel-calc" class="app-panel">
+      <div id="calc-screen-view" class="calc-screen" aria-live="assertive">0</div>
+      <div class="calc-keypad">
+        <button type="button" onclick="calcKey('C')">C</button>
+        <button type="button" onclick="calcKey('(')">(</button>
+        <button type="button" onclick="calcKey(')')">)</button>
+        <button type="button" onclick="calcKey('/')">÷</button>
+        <button type="button" onclick="calcKey('7')">7</button>
+        <button type="button" onclick="calcKey('8')">8</button>
+        <button type="button" onclick="calcKey('9')">9</button>
+        <button type="button" onclick="calcKey('*')">×</button>
+        <button type="button" onclick="calcKey('4')">4</button>
+        <button type="button" onclick="calcKey('5')">5</button>
+        <button type="button" onclick="calcKey('6')">6</button>
+        <button type="button" onclick="calcKey('-')">-</button>
+        <button type="button" onclick="calcKey('1')">1</button>
+        <button type="button" onclick="calcKey('2')">2</button>
+        <button type="button" onclick="calcKey('3')">3</button>
+        <button type="button" onclick="calcKey('+')">+</button>
+        <button type="button" onclick="calcKey('0')">0</button>
+        <button type="button" onclick="calcKey('.')">.</button>
+        <button type="button" onclick="calcKey('DEL')">⌫</button>
+        <button type="button" class="btn-gold" onclick="calcKey('=')">=</button>
+      </div>
+    </section>
+
+    <!-- TAB 5: TOOLS -->
+    <section id="panel-tools" class="app-panel">
+      <div class="stat-card">
+        <div><strong>Time & Battery</strong></div>
+        <div id="battery-status-view" class="stat-value">Checking Battery...</div>
+        <button type="button" class="full-btn btn-gold" style="margin-top: 10px;" onclick="announceTimeAndBattery()">🔋 Announce Time & Battery</button>
+      </div>
+
+      <div class="stat-card">
+        <div><strong>My Reminders</strong></div>
+        <input type="text" id="task-input-field" placeholder="Type a reminder..." />
+        <button type="button" class="full-btn btn-gold" onclick="saveTaskItem()">➕ Save Reminder</button>
+        <div id="tasks-container-box" style="margin-top: 10px;"></div>
+      </div>
+    </section>
   </div>
-
-
-  <!-- ================= DEDICATED WINDOW 2: AI ASSISTANT ================= -->
-  <div id="win-ai" class="window-modal">
-    <div class="window-header">
-      <div class="window-title">🤖 AI Assistant</div>
-      <button type="button" class="btn-close-window" onclick="closeWindow('win-ai')">✖ Close Window</button>
-    </div>
-
-    <input type="text" id="ai-query-box" placeholder="Ask AI a question..." />
-    <div class="grid-2">
-      <button type="button" class="btn-gold" onclick="askAIAssistant()">💬 Ask AI</button>
-      <button type="button" onclick="summarizeReaderText()">📝 Summarize Reader</button>
-    </div>
-    <textarea id="ai-reply-box" placeholder="AI responses..."></textarea>
-    <button type="button" class="full-btn" onclick="document.getElementById('ai-reply-box').value=''; speakText('Cleared.')">Clear Output</button>
-  </div>
-
-
-  <!-- ================= DEDICATED WINDOW 3: SENSORS ================= -->
-  <div id="win-sensors" class="window-modal">
-    <div class="window-header">
-      <div class="window-title">🧭 Compass & Sensors</div>
-      <button type="button" class="btn-close-window" onclick="closeWindow('win-sensors')">✖ Close Window</button>
-    </div>
-
-    <div class="info-card">
-      <div><strong>Tactile Compass</strong></div>
-      <div id="disp-heading-num" class="metric-disp">--°</div>
-      <div id="disp-heading-card">Checking heading...</div>
-    </div>
-    <button type="button" class="full-btn btn-gold" onclick="speakText(document.getElementById('disp-heading-num').innerText + ' ' + document.getElementById('disp-heading-card').innerText)">📢 Announce Compass</button>
-  </div>
-
-
-  <!-- ================= DEDICATED WINDOW 4: CALCULATOR ================= -->
-  <div id="win-calc" class="window-modal">
-    <div class="window-header">
-      <div class="window-title">🧮 Talking Calculator</div>
-      <button type="button" class="btn-close-window" onclick="closeWindow('win-calc')">✖ Close Window</button>
-    </div>
-
-    <div id="calc-display-text" class="calc-box">0</div>
-    <div class="calc-keys">
-      <button type="button" onclick="handleCalc('C')">C</button>
-      <button type="button" onclick="handleCalc('(')">(</button>
-      <button type="button" onclick="handleCalc(')')">)</button>
-      <button type="button" onclick="handleCalc('/')">÷</button>
-      <button type="button" onclick="handleCalc('7')">7</button>
-      <button type="button" onclick="handleCalc('8')">8</button>
-      <button type="button" onclick="handleCalc('9')">9</button>
-      <button type="button" onclick="handleCalc('*')">×</button>
-      <button type="button" onclick="handleCalc('4')">4</button>
-      <button type="button" onclick="handleCalc('5')">5</button>
-      <button type="button" onclick="handleCalc('6')">6</button>
-      <button type="button" onclick="handleCalc('-')">-</button>
-      <button type="button" onclick="handleCalc('1')">1</button>
-      <button type="button" onclick="handleCalc('2')">2</button>
-      <button type="button" onclick="handleCalc('3')">3</button>
-      <button type="button" onclick="handleCalc('+')">+</button>
-      <button type="button" onclick="handleCalc('0')">0</button>
-      <button type="button" onclick="handleCalc('.')">.</button>
-      <button type="button" onclick="handleCalc('DEL')">⌫</button>
-      <button type="button" class="btn-gold" onclick="handleCalc('=')">=</button>
-    </div>
-  </div>
-
-
-  <!-- ================= DEDICATED WINDOW 5: DAILY TOOLS ================= -->
-  <div id="win-tools" class="window-modal">
-    <div class="window-header">
-      <div class="window-title">🛠 Daily Tools & Reminders</div>
-      <button type="button" class="btn-close-window" onclick="closeWindow('win-tools')">✖ Close Window</button>
-    </div>
-
-    <div class="info-card">
-      <div><strong>Time & Battery</strong></div>
-      <div id="batt-metric" class="metric-disp">Checking Battery...</div>
-      <button type="button" class="full-btn btn-gold" style="margin-top: 10px;" onclick="announceTimeAndBattery()">🔋 Announce Time & Battery</button>
-    </div>
-
-    <div class="info-card">
-      <div><strong>My Reminders</strong></div>
-      <input type="text" id="task-entry-input" placeholder="Type a reminder..." />
-      <button type="button" class="full-btn btn-gold" onclick="saveNewReminder()">➕ Save Reminder</button>
-      <div id="reminder-items-box" style="margin-top: 10px;"></div>
-    </div>
-  </div>
-
 
   <script>
-    async function loadFileContent(e) {
+    // File Handler
+    function handleFileOpen(e) {
       const file = e.target.files[0];
       if (!file) return;
-      stopSpeaking();
-      const fname = file.name.toLowerCase();
+      stopAudio();
+      setStatus('Loading ' + file.name);
+      speakAudio('Loading ' + file.name);
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        document.getElementById('text-editor-box').value = evt.target.result;
+        setStatus('Loaded ' + file.name);
+        speakAudio('Loaded successfully.');
+      };
+      reader.readAsText(file);
+    }
 
-      if (fname.endsWith('.pdf')) {
-        speakText('Parsing PDF document.');
-        const fr = new FileReader();
-        fr.onload = async function() {
-          try {
-            if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-            const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(this.result) }).promise;
-            let fullText = '';
-            for (let i = 1; i <= pdf.numPages; i++) {
-              const page = await pdf.getPage(i);
-              const content = await page.getTextContent();
-              fullText += content.items.map(it => it.str).join(' ') + '\n\n';
-            }
-            document.getElementById('reading-content').value = fullText.trim() || 'No text found.';
-            speakText(`Loaded PDF with ${pdf.numPages} pages.`);
-          } catch (err) { speakText('Failed to read PDF.'); }
-        };
-        fr.readAsArrayBuffer(file);
-      } else {
-        const fr = new FileReader();
-        fr.onload = (evt) => { document.getElementById('reading-content').value = evt.target.result; speakText('Loaded text file.'); };
-        fr.readAsText(file);
+    function handlePhotoScan(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      stopAudio();
+      setStatus('Photo captured.');
+      speakAudio('Photo captured and loaded.');
+      document.getElementById('text-editor-box').value = '[Captured Image: ' + file.name + ']
+Image imported into accessible_reader workspace.';
+    }
+
+    function readWorkspaceText() {
+      const txt = document.getElementById('text-editor-box').value.trim();
+      if (!txt) {
+        setStatus('Text box is empty.');
+        speakText('Text box is empty.');
+        return;
       }
+      setStatus('Reading aloud...');
+      speakAudio(txt);
     }
 
-    async function loadPhotoContent(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      stopSpeaking();
-      speakText('Scanning image for text.');
-      try {
-        const ocr = await Tesseract.recognize(file, 'eng');
-        const out = ocr.data.text.trim();
-        if (out) {
-          document.getElementById('reading-content').value = out;
-          speakText('OCR complete. Reading text.');
-          speakText(out);
-        } else { speakText('No text found in image.'); }
-      } catch (err) { speakText('OCR failed.'); }
+    function copyWorkspaceText() {
+      const txt = document.getElementById('text-editor-box').value;
+      if (txt && navigator.clipboard) navigator.clipboard.writeText(txt);
+      setStatus('Text copied.');
+      speakAudio('Text copied.');
     }
 
-    function readMainText() {
-      const txt = document.getElementById('reading-content').value.trim();
-      if (!txt) { speakText('Text is empty.'); return; }
-      speakText(txt);
+    function clearWorkspaceText() {
+      stopAudio();
+      document.getElementById('text-editor-box').value = '';
+      setStatus('Cleared.');
+      speakAudio('Cleared.');
     }
 
-    function copyMainText() {
-      const txt = document.getElementByI
+    // AI Logic
+    function triggerAIAssistant() {
+      const q = document.getElementById('ai-user-prompt').value.trim();
+      if (!q) return;
+      setStatus('Processing...');
+      speakAudio('Processing.');
+      setTimeout(() => {
+        const reply = 'AI Answer for: "' + q + '"\nProcessed by accessible_reader.';
+        document.getElementById('ai-response-box').value = reply;
+        setStatus('Ready.');
+        speakAudio(reply);
+      }, 500);
+    }
+
+    function summarizeWorkspace() {
+      const txt = document.getElementById('text-editor-box').value.trim();
+      if (!txt) {
+        speakAudio('Reader text is empty.');
+        return;
+      }
+      setStatus('Summarizing...');
+      speakAudio('Generating summary.');
+      setTimeout(() => {
+        const parts = txt.split(/[.!?]+/).filter(Boolean);
+        const sum = parts.slice(0, 3).join('. ') + '.';
+        document.getElementById('ai-response-box').value = 'Summary:\n' + sum;
+        setStatus('Ready.');
+        speakAudio('Summary: ' + sum);
+      }, 500);
+    }
+
+    // Compass
+    if (window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', function(e) {
+        let heading = e.webkitCompassHeading || (360 - e.alpha);
+        if (!isNaN(heading)) {
+          const d = Math.round(heading);
+          const degEl = document.getElementById('comp-deg');
+          const nameEl = document.getElementById('comp-name');
+          if (degEl) degEl.innerText = d + '°';
+          if (nameEl) nameEl.innerText = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'][Math.round(d / 45) % 8];
+        }
+      }, true);
+    }
+
+    // Calculator
+    let calcExpr = '';
+    function calcKey(k) {
+      const screen = document.getElementById('calc-screen-view');
+      if (k === 'C') {
+        calcExpr = '';
+        screen.innerText = '0';
+        speakAudio('Cleared');
+      } else if (k === 'DEL') {
+        calcExpr = calcExpr.slice(0, -1);
+        screen.innerText = calcExpr || '0';
+        speakAudio('Deleted');
+      } else if (k === '=') {
+        try {
+          const res = Function('"use strict"; return (' + calcExpr + ')')();
+          screen.innerText = res;
+          calcExpr = String(res);
+          speakAudio('Equals ' + res);
+        } catch (e) 
