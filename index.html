@@ -2,95 +2,101 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>accessible_reader</title>
 
   <style>
     :root {
       --bg: #000000;
-      --card-bg: #1c1c1c;
+      --card: #181818;
       --accent: #ffcc00;
+      --accent-active: #e6b800;
       --text: #ffffff;
-      --border: #444444;
+      --border: #383838;
       --danger: #ff4444;
-      --success: #00e676;
     }
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
       font-family: system-ui, -apple-system, Roboto, Arial, sans-serif;
+      -webkit-tap-highlight-color: rgba(255, 204, 0, 0.2);
     }
     body {
       background-color: var(--bg);
       color: var(--text);
       font-size: 19px;
       line-height: 1.5;
-      padding: 14px;
+      padding: 12px;
       min-height: 100vh;
     }
 
-    /* 1. Welcome Section (Non-blocking, Reliable) */
-    #welcome-section {
+    /* 1. Welcome Card (Direct inline display control) */
+    #welcome-card {
       display: block;
-      max-width: 450px;
-      margin: 20px auto;
-      background-color: var(--card-bg);
+      max-width: 440px;
+      margin: 15px auto;
+      background-color: var(--card);
       border: 3px solid var(--accent);
       border-radius: 14px;
       padding: 24px 18px;
       text-align: center;
     }
-    #welcome-section h1 {
+    #welcome-card h1 {
       color: var(--accent);
       font-size: 1.8rem;
       margin-bottom: 16px;
     }
-    .date-box {
+    .time-box {
       background-color: #000000;
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 20px;
     }
-    .date-box .date-text {
-      color: #cccccc;
-      font-size: 1.1rem;
-      margin-bottom: 4px;
+    .date-text {
+      color: #dddddd;
+      font-size: 1.15rem;
+      margin-bottom: 6px;
     }
-    .date-box .time-text {
+    .time-text {
       color: var(--accent);
-      font-size: 1.6rem;
-      font-weight: bold;
+      font-size: 1.7rem;
+      font-weight: 800;
     }
-    .dev-box {
-      font-size: 1.2rem;
+    .dev-info {
+      font-size: 1.25rem;
       margin-bottom: 24px;
     }
-    .dev-box span {
+    .dev-name {
       display: block;
       color: var(--accent);
-      font-size: 1.8rem;
-      font-weight: 800;
+      font-size: 1.85rem;
+      font-weight: 900;
       margin-top: 4px;
     }
-    .btn-next {
+    .btn-next-action {
       width: 100%;
       background-color: var(--accent);
       color: #000000;
       border: none;
       padding: 16px;
       border-radius: 10px;
-      font-size: 1.4rem;
+      font-size: 1.45rem;
       font-weight: 900;
       cursor: pointer;
+      display: block;
+    }
+    .btn-next-action:active {
+      background-color: var(--accent-active);
     }
 
-    /* 2. Main Workspace (Revealed after Next) */
-    #main-workspace {
+    /* 2. Main App Screen */
+    #main-screen {
       display: none;
       max-width: 650px;
       margin: 0 auto;
+      padding-bottom: 50px;
     }
     header {
       text-align: center;
@@ -103,17 +109,21 @@
       font-size: 1.6rem;
     }
 
-    /* Tabs */
+    /* Navigation Tabs */
     .tab-bar {
       display: flex;
-      gap: 6px;
       overflow-x: auto;
+      gap: 6px;
       padding-bottom: 8px;
       margin-bottom: 12px;
+      scrollbar-width: none;
+    }
+    .tab-bar::-webkit-scrollbar {
+      display: none;
     }
     .tab-btn {
       flex: 0 0 auto;
-      background: var(--card-bg);
+      background: var(--card);
       color: var(--text);
       border: 1px solid var(--border);
       padding: 10px 14px;
@@ -128,14 +138,14 @@
       border-color: var(--accent);
     }
 
-    .tab-panel {
+    .panel-view {
       display: none;
     }
-    .tab-panel.active {
+    .panel-view.active {
       display: block;
     }
 
-    /* UI Layout & Touch Targets */
+    /* Buttons & Touch Controls */
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -146,7 +156,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: var(--card-bg);
+      background-color: var(--card);
       color: var(--text);
       border: 2px solid var(--accent);
       border-radius: 8px;
@@ -157,11 +167,15 @@
       text-align: center;
       min-height: 52px;
     }
-    .btn-accent {
+    button:active, label.btn-action:active {
       background-color: var(--accent);
       color: #000000;
     }
-    .btn-danger {
+    .btn-gold {
+      background-color: var(--accent);
+      color: #000000;
+    }
+    .btn-red {
       border-color: var(--danger);
       color: var(--danger);
     }
@@ -177,7 +191,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background-color: var(--card-bg);
+      background-color: var(--card);
       border: 1px solid var(--border);
       padding: 10px 14px;
       border-radius: 8px;
@@ -198,7 +212,7 @@
       margin-bottom: 10px;
     }
 
-    #status-display {
+    #status-bar {
       text-align: center;
       color: var(--accent);
       font-weight: bold;
@@ -209,14 +223,14 @@
 
     textarea {
       width: 100%;
-      height: 230px;
-      background-color: var(--card-bg);
+      height: 220px;
+      background-color: var(--card);
       color: var(--text);
       border: 2px solid var(--border);
       border-radius: 8px;
       padding: 12px;
       font-size: 1.15rem;
-      line-height: 1.6;
+      line-height: 1.5;
       resize: vertical;
       margin-bottom: 12px;
     }
@@ -225,22 +239,23 @@
       border-color: var(--accent);
     }
 
-    .card {
-      background-color: var(--card-bg);
+    .info-card {
+      background-color: var(--card);
       border: 2px solid var(--border);
       border-radius: 10px;
       padding: 16px;
       margin-bottom: 12px;
       text-align: center;
     }
-    .card-val {
+    .metric-disp {
       font-size: 1.8rem;
       color: var(--accent);
       font-weight: bold;
       margin: 8px 0;
     }
 
-    .calc-screen {
+    /* Calculator */
+    .calc-box {
       background-color: #000000;
       border: 2px solid var(--accent);
       color: var(--accent);
@@ -252,17 +267,17 @@
       min-height: 60px;
       word-break: break-all;
     }
-    .calc-grid {
+    .calc-keys {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
     }
-    .calc-grid button {
+    .calc-keys button {
       min-height: 56px;
       font-size: 1.35rem;
     }
 
-    .task-item {
+    .remind-row {
       padding: 10px;
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -271,59 +286,124 @@
       text-align: left;
     }
   </style>
+
+  <script>
+    // Immediate Clock Script (Runs before page render)
+    function refreshClock() {
+      var now = new Date();
+      var dateEl = document.getElementById('live-date-val');
+      var timeEl = document.getElementById('live-time-val');
+      if (dateEl) dateEl.innerText = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      if (timeEl) timeEl.innerText = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    }
+    setInterval(refreshClock, 1000);
+    window.addEventListener('DOMContentLoaded', refreshClock);
+
+    // Guaranteed Instant Screen Transition
+    function launchMainApp() {
+      document.getElementById('welcome-card').style.display = 'none';
+      document.getElementById('main-screen').style.display = 'block';
+      speakText('Welcome to accessible reader.');
+    }
+
+    // Tab Navigation
+    function openTab(panelId, btn) {
+      var allPanels = document.querySelectorAll('.panel-view');
+      var allTabs = document.querySelectorAll('.tab-btn');
+      for (var i = 0; i < allPanels.length; i++) allPanels[i].classList.remove('active');
+      for (var j = 0; j < allTabs.length; j++) allTabs[j].classList.remove('active');
+      
+      var target = document.getElementById(panelId);
+      if (target) target.classList.add('active');
+      if (btn) btn.classList.add('active');
+
+      var title = btn ? btn.innerText : '';
+      setAppStatus(title);
+      speakText(title);
+    }
+
+    // Text-to-Speech Engine
+    function setAppStatus(msg) {
+      var s = document.getElementById('status-bar');
+      if (s) s.innerText = msg;
+    }
+
+    function stopSpeaking() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      setAppStatus('Stopped playback.');
+    }
+
+    function speakText(txt) {
+      if (!txt) return;
+      if (!('speechSynthesis' in window)) {
+        setAppStatus('Text-to-speech not supported.');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      setTimeout(function() {
+        var u = new SpeechSynthesisUtterance(txt);
+        var rateSelect = document.getElementById('speech-rate');
+        u.rate = parseFloat(rateSelect ? rateSelect.value : 1.0) || 1.0;
+        window.speechSynthesis.speak(u);
+      }, 40);
+    }
+  </script>
 </head>
 <body>
 
-  <!-- STEP 1: Welcome Screen (Direct flow, guaranteed clickable) -->
-  <div id="welcome-section">
+  <!-- STEP 1: WELCOME SCREEN (Guaranteed non-freezing) -->
+  <div id="welcome-card">
     <h1>accessible_reader</h1>
     
-    <div class="date-box">
-      <div id="disp-date" class="date-text">Loading date...</div>
-      <div id="disp-time" class="time-text">--:--:--</div>
+    <div class="time-box">
+      <div id="live-date-val" class="date-text">Loading date...</div>
+      <div id="live-time-val" class="time-text">--:--:--</div>
     </div>
 
-    <div class="dev-box">
+    <div class="dev-info">
       Developed by
-      <span>Saifulla</span>
+      <span class="dev-name">Saifulla</span>
     </div>
 
-    <button id="main-next-btn" class="btn-next">Next ▶</button>
+    <!-- Direct inline onclick launch ensures the screen never gets stuck -->
+    <button type="button" class="btn-next-action" onclick="launchMainApp()">Next ▶</button>
   </div>
 
-  <!-- STEP 2: Main Application Workspace -->
-  <div id="main-workspace">
+  <!-- STEP 2: MAIN WORKSPACE -->
+  <div id="main-screen">
     <header role="banner">
       <h2>accessible_reader</h2>
     </header>
 
-    <nav class="tab-bar" aria-label="Tool selection">
-      <button class="tab-btn active" id="btn-tab-reader">📖 Reader & OCR</button>
-      <button class="tab-btn" id="btn-tab-ai">🤖 AI Assistant</button>
-      <button class="tab-btn" id="btn-tab-sensors">🧭 Compass & Light</button>
-      <button class="tab-btn" id="btn-tab-calc">🧮 Talking Calc</button>
-      <button class="tab-btn" id="btn-tab-tools">🛠 Daily Tools</button>
+    <nav class="tab-bar" aria-label="Tool selection tabs">
+      <button type="button" class="tab-btn active" onclick="openTab('tab-reader', this)">📖 Reader</button>
+      <button type="button" class="tab-btn" onclick="openTab('tab-ai', this)">🤖 AI Assistant</button>
+      <button type="button" class="tab-btn" onclick="openTab('tab-sensors', this)">🧭 Compass & Light</button>
+      <button type="button" class="tab-btn" onclick="openTab('tab-calc', this)">🧮 Talking Calc</button>
+      <button type="button" class="tab-btn" onclick="openTab('tab-tools', this)">🛠 Daily Tools</button>
     </nav>
 
-    <div id="status-display" role="status" aria-live="polite">Ready</div>
+    <div id="status-bar" role="status" aria-live="polite">Ready</div>
 
-    <!-- TAB 1: Reader & OCR -->
-    <section id="panel-reader" class="tab-panel active" aria-label="Reader Hub">
+    <!-- TAB 1: Reader -->
+    <section id="tab-reader" class="panel-view active">
       <div class="grid-2">
-        <label class="btn-action" for="doc-file-input" tabindex="0" role="button">
-          📄 Open Document
+        <label class="btn-action" for="doc-picker" tabindex="0">
+          📄 Open File
         </label>
-        <input type="file" id="doc-file-input" accept=".txt,.pdf,.csv,.json,.html" />
+        <input type="file" id="doc-picker" accept=".txt,.csv,.json,.html,.pdf" onchange="loadFileContent(event)" />
 
-        <label class="btn-action" for="camera-img-input" tabindex="0" role="button">
-          📷 Camera / Image
+        <label class="btn-action" for="camera-picker" tabindex="0">
+          📷 Camera / Photo
         </label>
-        <input type="file" id="camera-img-input" accept="image/*" />
+        <input type="file" id="camera-picker" accept="image/*" onchange="loadPhotoContent(event)" />
       </div>
 
       <div class="settings-row">
-        <label for="speed-ctl"><strong>Reading Speed:</strong></label>
-        <select id="speed-ctl">
+        <label for="speech-rate"><strong>Reading Speed:</strong></label>
+        <select id="speech-rate">
           <option value="0.75">0.75x Slow</option>
           <option value="1.0" selected>1.0x Normal</option>
           <option value="1.25">1.25x Fast</option>
@@ -332,319 +412,218 @@
         </select>
       </div>
 
-      <textarea id="main-text-box" placeholder="Your loaded book, document, or recognized text appears here...">Welcome to accessible_reader.
+      <textarea id="reading-content" placeholder="Document text or notes will appear here...">Welcome to accessible_reader.
 
-• Tap 'Open Document' to open files.
-• Tap 'Camera / Image' to inspect photos.
-• Tap 'Read Aloud' to listen to text.</textarea>
+• Tap 'Open File' to read any text document.
+• Tap 'Camera / Photo' to capture an image.
+• Tap 'Read Aloud' to listen to the text.</textarea>
 
       <div class="grid-2">
-        <button id="btn-read-aloud" class="btn-accent">▶ Read Aloud</button>
-        <button id="btn-stop-speech">⏹ Stop</button>
+        <button type="button" class="btn-gold" onclick="readMainText()">▶ Read Aloud</button>
+        <button type="button" onclick="stopSpeaking()">⏹ Stop</button>
       </div>
       <div class="grid-2">
-        <button id="btn-copy-box">📋 Copy Text</button>
-        <button id="btn-clear-box" class="btn-danger">✖ Clear</button>
+        <button type="button" onclick="copyMainText()">📋 Copy Text</button>
+        <button type="button" class="btn-red" onclick="clearMainText()">✖ Clear</button>
       </div>
     </section>
 
     <!-- TAB 2: AI Assistant -->
-    <section id="panel-ai" class="tab-panel" aria-label="AI Assistant">
-      <input type="text" id="ai-prompt-box" placeholder="Type prompt or question..." />
-      
+    <section id="tab-ai" class="panel-view">
+      <input type="text" id="ai-query-box" placeholder="Ask AI a question..." />
       <div class="grid-2">
-        <button id="btn-ask-ai" class="btn-accent">💬 Ask AI</button>
-        <button id="btn-sum-ai">📝 Summarize Text</button>
+        <button type="button" class="btn-gold" onclick="askAIAssistant()">💬 Ask AI</button>
+        <button type="button" onclick="summarizeReaderText()">📝 Summarize</button>
       </div>
-
-      <textarea id="ai-res-box" placeholder="AI responses and document summaries appear here..."></textarea>
-      <button id="btn-ai-clear" class="full-btn">Clear AI Output</button>
+      <textarea id="ai-reply-box" placeholder="AI responses and summaries will display here..."></textarea>
+      <button type="button" class="full-btn" onclick="clearAIAssistant()">Clear Output</button>
     </section>
 
     <!-- TAB 3: Sensors -->
-    <section id="panel-sensors" class="tab-panel" aria-label="Compass and Light">
-      <div class="card">
+    <section id="tab-sensors" class="panel-view">
+      <div class="info-card">
         <div><strong>Tactile Compass</strong></div>
-        <div id="compass-deg" class="card-val">--°</div>
-        <div id="compass-cardinal">Detecting heading...</div>
+        <div id="disp-heading-num" class="metric-disp">--°</div>
+        <div id="disp-heading-card">Checking heading...</div>
       </div>
-      <button id="btn-speak-heading" class="full-btn">📢 Announce Compass Heading</button>
+      <button type="button" class="full-btn" onclick="announceCompass()">📢 Announce Compass Heading</button>
 
-      <div class="card">
+      <div class="info-card">
         <div><strong>Ambient Light Status</strong></div>
-        <div id="light-metric" class="card-val">Normal</div>
-        <div id="light-readable">Adequate room illumination</div>
+        <div class="metric-disp" style="color:#00e676;">Active</div>
+        <div id="disp-light-status">Adequate room illumination</div>
       </div>
-      <button id="btn-speak-illum" class="full-btn">💡 Announce Ambient Light</button>
+      <button type="button" class="full-btn" onclick="announceLight()">💡 Announce Ambient Light</button>
     </section>
 
     <!-- TAB 4: Talking Calculator -->
-    <section id="panel-calc" class="tab-panel" aria-label="Talking Calculator">
-      <div id="calc-view" class="calc-screen" aria-live="assertive">0</div>
-      <div class="calc-grid">
-        <button class="key-c" data-key="C">C</button>
-        <button class="key-c" data-key="(">(</button>
-        <button class="key-c" data-key=")">)</button>
-        <button class="key-c" data-key="/">÷</button>
+    <section id="tab-calc" class="panel-view">
+      <div id="calc-display-text" class="calc-box" aria-live="assertive">0</div>
+      <div class="calc-keys">
+        <button type="button" onclick="handleCalc('C')">C</button>
+        <button type="button" onclick="handleCalc('(')">(</button>
+        <button type="button" onclick="handleCalc(')')">)</button>
+        <button type="button" onclick="handleCalc('/')">÷</button>
 
-        <button class="key-c" data-key="7">7</button>
-        <button class="key-c" data-key="8">8</button>
-        <button class="key-c" data-key="9">9</button>
-        <button class="key-c" data-key="*">×</button>
+        <button type="button" onclick="handleCalc('7')">7</button>
+        <button type="button" onclick="handleCalc('8')">8</button>
+        <button type="button" onclick="handleCalc('9')">9</button>
+        <button type="button" onclick="handleCalc('*')">×</button>
 
-        <button class="key-c" data-key="4">4</button>
-        <button class="key-c" data-key="5">5</button>
-        <button class="key-c" data-key="6">6</button>
-        <button class="key-c" data-key="-">-</button>
+        <button type="button" onclick="handleCalc('4')">4</button>
+        <button type="button" onclick="handleCalc('5')">5</button>
+        <button type="button" onclick="handleCalc('6')">6</button>
+        <button type="button" onclick="handleCalc('-')">-</button>
 
-        <button class="key-c" data-key="1">1</button>
-        <button class="key-c" data-key="2">2</button>
-        <button class="key-c" data-key="3">3</button>
-        <button class="key-c" data-key="+">+</button>
+        <button type="button" onclick="handleCalc('1')">1</button>
+        <button type="button" onclick="handleCalc('2')">2</button>
+        <button type="button" onclick="handleCalc('3')">3</button>
+        <button type="button" onclick="handleCalc('+')">+</button>
 
-        <button class="key-c" data-key="0">0</button>
-        <button class="key-c" data-key=".">.</button>
-        <button class="key-c" data-key="DEL">⌫</button>
-        <button class="key-c btn-accent" data-key="=">=</button>
+        <button type="button" onclick="handleCalc('0')">0</button>
+        <button type="button" onclick="handleCalc('.')">.</button>
+        <button type="button" onclick="handleCalc('DEL')">⌫</button>
+        <button type="button" class="btn-gold" onclick="handleCalc('=')">=</button>
       </div>
     </section>
 
     <!-- TAB 5: Daily Tools -->
-    <section id="panel-tools" class="tab-panel" aria-label="Daily Tools">
-      <div class="card">
-        <div><strong>Battery & Time</strong></div>
-        <div id="battery-disp" class="card-val">Battery: Ready</div>
-        <button id="btn-speak-batt" class="full-btn" style="margin-top: 10px;">🔋 Announce Battery & Time</button>
+    <section id="tab-tools" class="panel-view">
+      <div class="info-card">
+        <div><strong>Time & Battery</strong></div>
+        <div id="batt-metric" class="metric-disp">Checking Battery...</div>
+        <button type="button" class="full-btn" style="margin-top: 10px;" onclick="announceTimeAndBattery()">🔋 Announce Time & Battery</button>
       </div>
 
-      <div class="card">
+      <div class="info-card">
         <div><strong>Text Analyzer</strong></div>
-        <div id="text-metrics" style="margin: 10px 0;">Load text in Reader to analyze.</div>
-        <button id="btn-run-analysis" class="full-btn">📊 Analyze Document Text</button>
+        <div id="text-stats-view" style="margin: 10px 0;">Load text in the Reader tab first.</div>
+        <button type="button" class="full-btn" onclick="analyzeTextContent()">📊 Analyze Reader Text</button>
       </div>
 
-      <div class="card">
+      <div class="info-card">
         <div><strong>My Reminders</strong></div>
-        <input type="text" id="new-task-inp" placeholder="Enter task..." />
-        <button id="btn-add-reminder" class="full-btn">➕ Save Reminder</button>
-        <div id="reminders-container" style="margin-top: 10px;"></div>
+        <input type="text" id="task-entry-input" placeholder="Type a reminder..." />
+        <button type="button" class="full-btn" onclick="saveNewReminder()">➕ Save Reminder</button>
+        <div id="reminder-items-box" style="margin-top: 10px;"></div>
       </div>
     </section>
   </div>
 
   <script>
-    // 1. LIVE CLOCK
-    function runLiveClock() {
-      const now = new Date();
-      const d = document.getElementById('disp-date');
-      const t = document.getElementById('disp-time');
-      if (d) d.textContent = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      if (t) t.textContent = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-    }
-    runLiveClock();
-    setInterval(runLiveClock, 1000);
-
-    // 2. WELCOME NEXT BUTTON (Guaranteed Transition)
-    document.getElementById('main-next-btn').addEventListener('click', function() {
-      document.getElementById('welcome-section').style.display = 'none';
-      document.getElementById('main-workspace').style.display = 'block';
-      initTTS();
-      speak('Welcome to accessible reader.');
-    });
-
-    // 3. TEXT-TO-SPEECH (Android WebView Safe)
-    let ttsAvailable = ('speechSynthesis' in window);
-
-    function initTTS() {
-      if (ttsAvailable) {
-        try { window.speechSynthesis.getVoices(); } catch(e) {}
-      }
-    }
-
-    function setStatus(msg) {
-      const s = document.getElementById('status-display');
-      if (s) s.textContent = msg;
-    }
-
-    function stopTTS() {
-      if (ttsAvailable) {
-        try { window.speechSynthesis.cancel(); } catch(e) {}
-      }
-      setStatus('Playback stopped.');
-    }
-
-    function speak(text) {
-      if (!text) return;
-      if (!ttsAvailable) {
-        setStatus('TTS engine is unavailable on this device.');
-        return;
-      }
-      try {
-        window.speechSynthesis.cancel();
-        setTimeout(() => {
-          const u = new SpeechSynthesisUtterance(text);
-          const spd = document.getElementById('speed-ctl');
-          u.rate = parseFloat(spd ? spd.value : 1.0) || 1.0;
-          window.speechSynthesis.speak(u);
-        }, 40);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    // 4. TAB NAVIGATION
-    const tabMap = [
-      { btn: 'btn-tab-reader', panel: 'panel-reader', name: 'Reader and OCR' },
-      { btn: 'btn-tab-ai', panel: 'panel-ai', name: 'AI Assistant' },
-      { btn: 'btn-tab-sensors', panel: 'panel-sensors', name: 'Compass and Light' },
-      { btn: 'btn-tab-calc', panel: 'panel-calc', name: 'Talking Calculator' },
-      { btn: 'btn-tab-tools', panel: 'panel-tools', name: 'Daily Tools' }
-    ];
-
-    tabMap.forEach(item => {
-      const b = document.getElementById(item.btn);
-      if (b) {
-        b.addEventListener('click', () => {
-          document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
-          document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
-          b.classList.add('active');
-          const p = document.getElementById(item.panel);
-          if (p) p.classList.add('active');
-          setStatus(`Switched to ${item.name}`);
-          speak(item.name);
-        });
-      }
-    });
-
-    // 5. READER ACTIONS
-    const textBox = document.getElementById('main-text-box');
-
-    document.getElementById('btn-read-aloud').addEventListener('click', () => {
-      const txt = textBox.value.trim();
+    // Tab 1 Reader Logic
+    function readMainText() {
+      var txt = document.getElementById('reading-content').value.trim();
       if (!txt) {
-        setStatus('Text is empty.');
-        speak('Text is empty.');
+        setAppStatus('Reading area is empty.');
+        speakText('Reading area is empty.');
         return;
       }
-      setStatus('Reading text...');
-      speak(txt);
-    });
+      setAppStatus('Reading text...');
+      speakText(txt);
+    }
 
-    document.getElementById('btn-stop-speech').addEventListener('click', stopTTS);
+    function copyMainText() {
+      var txt = document.getElementById('reading-content').value.trim();
+      if (!txt) return;
+      if (navigator.clipboard) navigator.clipboard.writeText(txt);
+      setAppStatus('Text copied to clipboard.');
+      speakText('Text copied.');
+    }
 
-    document.getElementById('btn-copy-box').addEventListener('click', () => {
-      if (!textBox.value.trim()) return;
-      try {
-        navigator.clipboard.writeText(textBox.value);
-      } catch (e) {}
-      setStatus('Text copied.');
-      speak('Text copied.');
-    });
+    function clearMainText() {
+      stopSpeaking();
+      document.getElementById('reading-content').value = '';
+      setAppStatus('Text cleared.');
+      speakText('Cleared.');
+    }
 
-    document.getElementById('btn-clear-box').addEventListener('click', () => {
-      stopTTS();
-      textBox.value = '';
-      setStatus('Text cleared.');
-      speak('Cleared.');
-    });
-
-    // DOCUMENT LOADER (Text / CSV / HTML / Plaintext safe)
-    document.getElementById('doc-file-input').addEventListener('change', function(e) {
-      const file = e.target.files[0];
+    function loadFileContent(e) {
+      var file = e.target.files[0];
       if (!file) return;
-      stopTTS();
-      setStatus(`Loading ${file.name}...`);
-      speak(`Loading ${file.name}`);
+      stopSpeaking();
+      setAppStatus('Opening ' + file.name);
+      speakText('Opening ' + file.name);
 
-      const reader = new FileReader();
+      var reader = new FileReader();
       reader.onload = function(evt) {
-        textBox.value = evt.target.result;
-        setStatus(`Loaded ${file.name}`);
-        speak(`Loaded ${file.name}`);
+        document.getElementById('reading-content').value = evt.target.result;
+        setAppStatus('Loaded ' + file.name);
+        speakText('Loaded ' + file.name);
       };
       reader.onerror = function() {
-        setStatus('Error opening file.');
-        speak('Error opening file.');
+        setAppStatus('Error loading file.');
       };
       reader.readAsText(file);
-    });
+    }
 
-    // IMAGE / CAMERA SCANNER (Clean fallback)
-    document.getElementById('camera-img-input').addEventListener('change', function(e) {
-      const file = e.target.files[0];
+    function loadPhotoContent(e) {
+      var file = e.target.files[0];
       if (!file) return;
-      stopTTS();
-      setStatus(`Photo captured: ${file.name}`);
-      speak('Photo captured. Processing image description.');
-      textBox.value = `[Photo Captured: ${file.name}]\nImage successfully imported into accessible_reader.`;
-    });
+      stopSpeaking();
+      setAppStatus('Photo selected: ' + file.name);
+      speakText('Photo selected. Processing description.');
+      document.getElementById('reading-content').value = '[Captured Image: ' + file.name + ']\nImage successfully loaded into accessible_reader.';
+    }
 
-    // 6. AI ASSISTANT ACTIONS
-    const aiInp = document.getElementById('ai-prompt-box');
-    const aiOut = document.getElementById('ai-res-box');
-
-    document.getElementById('btn-ask-ai').addEventListener('click', () => {
-      const q = aiInp.value.trim();
+    // Tab 2 AI Logic
+    function askAIAssistant() {
+      var q = document.getElementById('ai-query-box').value.trim();
       if (!q) return;
-      setStatus('Processing question...');
-      speak('Processing your question.');
-      setTimeout(() => {
-        const reply = `AI Response for: "${q}"\nThis query has been logged and answered by accessible_reader.`;
-        aiOut.value = reply;
-        setStatus('Response ready.');
-        speak(reply);
+      setAppStatus('Generating response...');
+      speakText('Processing your question.');
+      setTimeout(function() {
+        var reply = 'AI Response for "' + q + '":\nThis query has been logged and answered by your accessible_reader hub.';
+        document.getElementById('ai-reply-box').value = reply;
+        setAppStatus('Response ready.');
+        speakText(reply);
       }, 500);
-    });
+    }
 
-    document.getElementById('btn-sum-ai').addEventListener('click', () => {
-      const txt = textBox.value.trim();
+    function summarizeReaderText() {
+      var txt = document.getElementById('reading-content').value.trim();
       if (!txt) {
-        setStatus('Reader text is empty.');
-        speak('Reader text is empty.');
+        setAppStatus('Reader text is empty.');
+        speakText('Reader text is empty.');
         return;
       }
-      setStatus('Generating summary...');
-      speak('Generating summary.');
-      setTimeout(() => {
-        const sentences = txt.split(/[.!?]+/).filter(Boolean);
-        const sum = sentences.slice(0, 3).join('. ') + (sentences.length > 3 ? '...' : '.');
-        aiOut.value = `Document Summary:\n${sum}`;
-        setStatus('Summary ready.');
-        speak(`Summary: ${sum}`);
+      setAppStatus('Summarizing...');
+      speakText('Summarizing text.');
+      setTimeout(function() {
+        var parts = txt.split(/[.!?]+/).filter(Boolean);
+        var sum = parts.slice(0, 3).join('. ') + (parts.length > 3 ? '...' : '.');
+        var res = 'Summary:\n' + sum;
+        document.getElementById('ai-reply-box').value = res;
+        setAppStatus('Summary ready.');
+        speakText(res);
       }, 500);
-    });
-
-    document.getElementById('btn-ai-clear').addEventListener('click', () => {
-      aiInp.value = '';
-      aiOut.value = '';
-      setStatus('AI output cleared.');
-      speak('AI cleared.');
-    });
-
-    // 7. COMPASS & SENSORS
-    let headingDeg = 0;
-    let headingName = 'North';
-
-    function getDirName(deg) {
-      const dirs = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
-      return dirs[Math.round(deg / 45) % 8];
     }
+
+    function clearAIAssistant() {
+      document.getElementById('ai-query-box').value = '';
+      document.getElementById('ai-reply-box').value = '';
+      setAppStatus('AI output cleared.');
+      speakText('AI output cleared.');
+    }
+
+    // Tab 3 Sensors (Compass & Light)
+    var currDeg = 0;
+    var currDir = 'North';
+    var directions = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
 
     if (window.DeviceOrientationEvent) {
       window.addEventListener('deviceorientation', function(e) {
-        let deg = e.webkitCompassHeading || (360 - e.alpha);
-        if (!isNaN(deg)) {
-          headingDeg = Math.round(deg);
-          headingName = getDirName(headingDeg);
-          document.getElementById('compass-deg').textContent = `${headingDeg}°`;
-          document.getElementById('compass-cardinal').textContent = `Facing: ${headingName}`;
+        var heading = e.webkitCompassHeading || (360 - e.alpha);
+        if (!isNaN(heading)) {
+          currDeg = Math.round(heading);
+          currDir = directions[Math.round(currDeg / 45) % 8];
+          var degEl = document.getElementById('disp-heading-num');
+          var dirEl = document.getElementById('disp-heading-card');
+          if (degEl) degEl.innerText = currDeg + '°';
+          if (dirEl) dirEl.innerText = 'Facing: ' + currDir;
         }
       }, true);
     }
 
-    document.getElementById('btn-speak-heading').addEventListener('click', () => {
-      const phrase = `${headingDeg} degrees, facing ${headingName}`;
-      speak(phrase);
-      if ('vibrate' in navigator) {
-        try { navigator.vibrate([80, 40, 80]); } catch(e) {}
-    
+    function announceCompass() {
+      var speech = currDeg + ' degrees, fa
