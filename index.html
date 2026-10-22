@@ -2,734 +2,636 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#000000">
-  <meta name="description" content="Accessible Reader - an accessible reading tool for blind and visually impaired users.">
-  <title>Accessible Reader - Developed by Saifulla</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#000000">
+<title>Accessible Reader - Developed by Saifulla</title>
 
-  <style>
-    :root {
-      color-scheme: dark;
-      --background: #000000;
-      --foreground: #ffff00;
-      --border: #ffff00;
-      --button-background: #111111;
-      --focus: #ffffff;
-    }
+<style>
+* { box-sizing: border-box; }
 
-    * {
-      box-sizing: border-box;
-    }
+body {
+  margin: 0;
+  padding: 16px;
+  background: #000;
+  color: #ff0;
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  line-height: 1.6;
+}
 
-    html {
-      background: var(--background);
-      scroll-behavior: smooth;
-    }
+header { margin-bottom: 25px; }
+h1 { font-size: 2rem; margin-bottom: 0; }
+h2 { font-size: 1.7rem; }
+.credit { font-weight: bold; margin-top: 0; }
 
-    body {
-      margin: 0;
-      padding: 16px;
-      background: var(--background);
-      color: var(--foreground);
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 19px;
-      line-height: 1.6;
-    }
+button, input, textarea, select {
+  font: inherit;
+}
 
-    button,
-    input,
-    textarea,
-    select {
-      font: inherit;
-    }
+button {
+  display: block;
+  width: 100%;
+  min-height: 65px;
+  padding: 14px;
+  margin: 12px 0;
+  color: #ff0;
+  background: #111;
+  border: 3px solid #ff0;
+  border-radius: 10px;
+  font-weight: bold;
+  text-align: left;
+  cursor: pointer;
+}
 
-    button {
-      min-height: 64px;
-      padding: 14px 18px;
-      border: 3px solid var(--border);
-      border-radius: 12px;
-      background: var(--button-background);
-      color: var(--foreground);
-      font-weight: 700;
-      cursor: pointer;
-      touch-action: manipulation;
-    }
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 4px solid white;
+  outline-offset: 3px;
+}
 
-    button:focus-visible,
-    input:focus-visible,
-    textarea:focus-visible,
-    select:focus-visible,
-    a:focus-visible {
-      outline: 4px solid var(--focus);
-      outline-offset: 4px;
-    }
+button:active { background: #333300; }
 
-    button:active {
-      background: #303000;
-    }
+input, textarea, select {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 18px;
+  background: #111;
+  color: #ff0;
+  border: 2px solid #ff0;
+  border-radius: 8px;
+}
 
-    input,
-    textarea,
-    select {
-      width: 100%;
-      padding: 14px;
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      background: #101010;
-      color: var(--foreground);
-    }
+textarea { min-height: 180px; resize: vertical; }
 
-    textarea {
-      min-height: 180px;
-      resize: vertical;
-    }
+label { font-weight: bold; }
 
-    label {
-      display: block;
-      margin: 16px 0 8px;
-      font-weight: 700;
-    }
+.screen { display: none; }
+.screen.active { display: block; }
 
-    h1,
-    h2,
-    h3 {
-      color: var(--foreground);
-      line-height: 1.3;
-    }
+.back { margin-bottom: 20px; }
 
-    h1 {
-      margin-bottom: 4px;
-      font-size: clamp(1.8rem, 6vw, 2.5rem);
-    }
+.status {
+  padding: 12px;
+  border: 1px solid #ff0;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
 
-    h2 {
-      font-size: 1.7rem;
-    }
+.status:empty { display: none; }
 
-    .credit {
-      margin-top: 0;
-      font-weight: 800;
-    }
+img {
+  display: block;
+  max-width: 100%;
+  max-height: 60vh;
+  margin: 15px auto;
+}
 
-    .main-menu {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 16px;
-      margin-top: 30px;
-    }
+iframe {
+  width: 100%;
+  height: 60vh;
+  background: white;
+  border: 2px solid #ff0;
+}
 
-    .menu-button {
-      min-height: 100px;
-      font-size: 1.3rem;
-      text-align: left;
-    }
+.small-note { font-size: 0.9rem; }
 
-    .menu-button .emoji {
-      display: inline-block;
-      margin-right: 12px;
-      font-size: 1.8rem;
-    }
+footer {
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 2px solid #ff0;
+}
 
-    .screen {
-      display: none;
-    }
+[hidden] { display: none !important; }
 
-    .screen.active {
-      display: block;
-    }
-
-    .back-button {
-      width: 100%;
-      margin-bottom: 20px;
-      text-align: left;
-    }
-
-    .action-list {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .action-button {
-      width: 100%;
-    }
-
-    .file-input {
-      display: block;
-      margin-bottom: 20px;
-    }
-
-    .help,
-    .status {
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow-wrap: anywhere;
-    }
-
-    .status:empty {
-      display: none;
-    }
-
-    .reader-output {
-      min-height: 100px;
-      margin-top: 20px;
-      padding: 14px;
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
-
-    .preview-image {
-      display: block;
-      max-width: 100%;
-      max-height: 55vh;
-      margin: 16px auto;
-      border: 2px solid var(--border);
-      object-fit: contain;
-    }
-
-    .pdf-frame {
-      display: block;
-      width: 100%;
-      height: 60vh;
-      margin-top: 16px;
-      border: 2px solid var(--border);
-      background: #ffffff;
-    }
-
-    .exit-area {
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 2px solid var(--border);
-    }
-
-    .exit-button {
-      width: 100%;
-      border-color: #ffffff;
-    }
-
-    .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    @media (min-width: 700px) {
-      body {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 28px;
-      }
-
-      .main-menu {
-        grid-template-columns: 1fr;
-      }
-
-      .action-list.two-columns {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      html {
-        scroll-behavior: auto;
-      }
-
-      *,
-      *::before,
-      *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
-  </style>
+@media (min-width: 700px) {
+  body { max-width: 850px; margin: auto; padding: 25px; }
+}
+</style>
 </head>
 
 <body>
-  <header id="mainHeader">
-    <h1>Accessible Reader</h1>
-    <p class="credit">Developed by Saifulla</p>
-    <p>Simple reading tools designed with accessibility in mind.</p>
-  </header>
 
-  <main>
-    <!-- MAIN MENU -->
-    <section id="home" class="screen active" aria-labelledby="homeHeading">
-      <h2 id="homeHeading" tabindex="-1">Main Menu</h2>
+<header id="header">
+  <h1>Accessible Reader</h1>
+  <p class="credit">Developed by Saifulla</p>
+</header>
 
-      <nav class="main-menu" aria-label="Main menu">
-        <button class="menu-button" type="button" data-open="pdfScreen">
-          <span class="emoji" aria-hidden="true">📄</span>
-          PDF Reader
-        </button>
+<main>
 
-        <button class="menu-button" type="button" data-open="imageScreen">
-          <span class="emoji" aria-hidden="true">📷</span>
-          Image Scan
-        </button>
+<!-- MAIN MENU -->
+<section id="home" class="screen active" aria-labelledby="homeTitle">
+  <h2 id="homeTitle" tabindex="-1">Main Menu</h2>
 
-        <button class="menu-button" type="button" data-open="textScreen">
-          <span class="emoji" aria-hidden="true">🔊</span>
-          Text Reader
-        </button>
-      </nav>
+  <button type="button" data-open="pdfScreen">
+    📄 PDF Reader
+  </button>
 
-      <div class="exit-area">
-        <button id="exitButton" class="exit-button" type="button">
-          🚪 Exit Application
-        </button>
-      </div>
-    </section>
+  <button type="button" data-open="imageScreen">
+    📷 Image Scan
+  </button>
 
-    <!-- PDF READER -->
-    <section id="pdfScreen" class="screen" aria-labelledby="pdfHeading" aria-hidden="true">
-      <button class="back-button" type="button" data-home>
-        ⬅ Back to Main Menu
-      </button>
+  <button type="button" data-open="textScreen">
+    🔊 Text Reader
+  </button>
 
-      <h2 id="pdfHeading" tabindex="-1">PDF Reader</h2>
+  <footer>
+    <button type="button" id="exitButton">🚪 Exit Application</button>
+  </footer>
+</section>
 
-      <p class="help">
-        Choose a PDF file from your device. Your browser may display the
-        document below. PDF reading and text accessibility depend on your
-        browser and whether the PDF contains selectable text.
-      </p>
+<!-- PDF READER -->
+<section id="pdfScreen" class="screen" aria-labelledby="pdfTitle" aria-hidden="true">
+  <button type="button" class="back" data-home>⬅ Back to Main Menu</button>
+  <h2 id="pdfTitle" tabindex="-1">PDF Reader</h2>
 
-      <label for="pdfFile">Choose a PDF document</label>
-      <input class="file-input" id="pdfFile" type="file" accept=".pdf,application/pdf">
+  <p>Select a PDF file from your device.</p>
 
-      <div id="pdfStatus" class="status" role="status" aria-live="polite"></div>
+  <label for="pdfFile">Choose PDF file</label>
+  <input type="file" id="pdfFile" accept=".pdf,application/pdf">
 
-      <div id="pdfResult"></div>
+  <p id="pdfStatus" class="status" role="status" aria-live="polite"></p>
 
-      <div class="action-list">
-        <button id="openPdfButton" class="action-button" type="button" disabled>
-          Open PDF in New Tab
-        </button>
-        <button id="clearPdfButton" class="action-button" type="button">
-          Clear PDF
-        </button>
-      </div>
-    </section>
+  <div id="pdfOutput"></div>
 
-    <!-- IMAGE SCAN -->
-    <section id="imageScreen" class="screen" aria-labelledby="imageHeading" aria-hidden="true">
-      <button class="back-button" type="button" data-home>
-        ⬅ Back to Main Menu
-      </button>
+  <button type="button" id="openPdf" disabled>Open PDF in New Tab</button>
+  <button type="button" id="clearPdf">Clear PDF</button>
 
-      <h2 id="imageHeading" tabindex="-1">Image Scan</h2>
+  <p class="small-note">
+    The PDF opens using your browser's built-in viewer. Reading accessibility
+    depends on your browser and the PDF document.
+  </p>
+</section>
 
-      <p class="help">
-        Select or take a photo of a page. If your browser supports built-in
-        text recognition, you can try to extract the text. Otherwise, use
-        your device's accessibility or OCR feature and paste the recognized
-        text into Text Reader.
-      </p>
+<!-- IMAGE SCAN -->
+<section id="imageScreen" class="screen" aria-labelledby="imageTitle" aria-hidden="true">
+  <button type="button" class="back" data-home>⬅ Back to Main Menu</button>
+  <h2 id="imageTitle" tabindex="-1">Image Scan</h2>
 
-      <label for="imageFile">Choose or take a picture</label>
-      <input
-        class="file-input"
-        id="imageFile"
-        type="file"
-        accept="image/*"
-        capture="environment"
-      >
+  <p>Select a picture or take a photograph of a page.</p>
 
-      <div id="imageStatus" class="status" role="status" aria-live="polite"></div>
+  <label for="imageFile">Choose or take a picture</label>
+  <input type="file" id="imageFile" accept="image/*" capture="environment">
 
-      <img id="imagePreview" class="preview-image" alt="Selected image preview" hidden>
+  <p id="imageStatus" class="status" role="status" aria-live="polite"></p>
 
-      <div class="action-list">
-        <button id="recognizeButton" class="action-button" type="button" disabled>
-          Try to Recognize Text
-        </button>
-        <button id="sendImageTextButton" class="action-button" type="button" disabled>
-          Send Recognized Text to Text Reader
-        </button>
-        <button id="clearImageButton" class="action-button" type="button">
-          Clear Image
-        </button>
-      </div>
+  <img id="imagePreview" alt="Selected image preview" hidden>
 
-      <label for="recognizedText">Recognized text (editable)</label>
-      <textarea
-        id="recognizedText"
-        placeholder="Recognized text will appear here, or you can type or paste text."
-        spellcheck="true"
-      ></textarea>
+  <label for="imageText">Text from the image</label>
+  <textarea id="imageText" placeholder="Type or paste text recognized from your image."></textarea>
 
-      <p id="ocrHelp" class="help">
-        Text recognition is not available in every browser. This single-file
-        application does not download an OCR engine or send your image to an
-        external service.
-      </p>
-    </section>
+  <button type="button" id="sendImageText">Send Text to Text Reader</button>
+  <button type="button" id="clearImage">Clear Image and Text</button>
 
-    <!-- TEXT READER -->
-    <section id="textScreen" class="screen" aria-labelledby="textHeading" aria-hidden="true">
-      <button class="back-button" type="button" data-home>
-        ⬅ Back to Main Menu
-      </button>
+  <p class="small-note">
+    Automatic OCR is not available in every browser. If text is not
+    recognized automatically, use your phone's text recognition feature
+    and paste the result into the text box.
+  </p>
+</section>
 
-      <h2 id="textHeading" tabindex="-1">Text Reader</h2>
+<!-- TEXT READER -->
+<section id="textScreen" class="screen" aria-labelledby="textTitle" aria-hidden="true">
+  <button type="button" class="back" data-home>⬅ Back to Main Menu</button>
+  <h2 id="textTitle" tabindex="-1">Text Reader</h2>
 
-      <p class="help">
-        Type or paste text below, then use the reading controls. Speech
-        availability and voice choices depend on your device and browser.
-      </p>
+  <label for="readerText">Enter or paste text</label>
+  <textarea id="readerText" placeholder="Type or paste text here."></textarea>
 
-      <label for="readerText">Text to read</label>
-      <textarea
-        id="readerText"
-        placeholder="Type or paste your text here."
-        spellcheck="true"
-        autocomplete="off"
-      ></textarea>
+  <button type="button" id="speakButton">🔊 Read Text</button>
+  <button type="button" id="pauseButton">⏸ Pause Reading</button>
+  <button type="button" id="resumeButton">▶ Resume Reading</button>
+  <button type="button" id="stopButton">⏹ Stop Reading</button>
+  <button type="button" id="clearText">Clear Text</button>
 
-      <div class="action-list two-columns">
-        <button id="speakButton" class="action-button" type="button">
-          🔊 Read Text
-        </button>
+  <label for="voiceSelect">Voice</label>
+  <select id="voiceSelect">
+    <option value="">Default device voice</option>
+  </select>
 
-        <button id="pauseButton" class="action-button" type="button">
-          ⏸ Pause Reading
-        </button>
+  <label for="speechRate">Speaking speed</label>
+  <select id="speechRate">
+    <option value="0.7">Slow</option>
+    <option value="1" selected>Normal</option>
+    <option value="1.25">Fast</option>
+    <option value="1.5">Very fast</option>
+  </select>
 
-        <button id="resumeButton" class="action-button" type="button">
-          ▶ Resume Reading
-        </button>
+  <button type="button" id="saveText">Save Text on This Device</button>
+  <button type="button" id="loadText">Load Saved Text</button>
+  <button type="button" id="downloadText">Download Text File</button>
 
-        <button id="stopButton" class="action-button" type="button">
-          ⏹ Stop Reading
-        </button>
+  <p id="readerStatus" class="status" role="status" aria-live="polite"></p>
+</section>
 
-        <button id="clearTextButton" class="action-button" type="button">
-          Clear Text
-        </button>
+</main>
 
-        <button id="saveTextButton" class="action-button" type="button">
-          Save Text on This Device
-        </button>
+<script>
+(function () {
+  "use strict";
 
-        <button id="loadTextButton" class="action-button" type="button">
-          Load Saved Text
-        </button>
+  function startApp() {
+    var screens = document.querySelectorAll(".screen");
+    var header = document.getElementById("header");
+    var currentPdfUrl = null;
+    var currentImageUrl = null;
+    var voices = [];
+    var speechChunks = [];
+    var speechIndex = 0;
+    var speechRun = 0;
 
-        <button id="downloadTextButton" class="action-button" type="button">
-          Download Text File
-        </button>
-      </div>
+    function status(id, message) {
+      document.getElementById(id).textContent = message;
+    }
 
-      <label for="voiceSelect">Speech voice</label>
-      <select id="voiceSelect">
-        <option value="">Default device voice</option>
-      </select>
+    function stopSpeech() {
+      speechRun++;
+      speechChunks = [];
+      speechIndex = 0;
 
-      <label for="rateControl">Speaking speed</label>
-      <select id="rateControl">
-        <option value="0.7">Slow</option>
-        <option value="1" selected>Normal</option>
-        <option value="1.25">Fast</option>
-        <option value="1.5">Very fast</option>
-      </select>
-
-      <div id="readerStatus" class="status" role="status" aria-live="polite"></div>
-    </section>
-  </main>
-
-  <div id="globalStatus" class="visually-hidden" role="status" aria-live="polite"></div>
-
-  <script>
-    "use strict";
-
-    (function () {
-      const screens = Array.from(document.querySelectorAll(".screen"));
-      const homeScreen = document.getElementById("home");
-      const mainHeader = document.getElementById("mainHeader");
-
-      let currentPdfUrl = null;
-      let currentImageUrl = null;
-      let recognitionToken = 0;
-      let speechGeneration = 0;
-
-      const pdfFile = document.getElementById("pdfFile");
-      const pdfStatus = document.getElementById("pdfStatus");
-      const pdfResult = document.getElementById("pdfResult");
-      const openPdfButton = document.getElementById("openPdfButton");
-
-      const imageFile = document.getElementById("imageFile");
-      const imagePreview = document.getElementById("imagePreview");
-      const imageStatus = document.getElementById("imageStatus");
-      const recognizedText = document.getElementById("recognizedText");
-      const recognizeButton = document.getElementById("recognizeButton");
-      const sendImageTextButton = document.getElementById("sendImageTextButton");
-
-      const readerText = document.getElementById("readerText");
-      const readerStatus = document.getElementById("readerStatus");
-      const voiceSelect = document.getElementById("voiceSelect");
-      const rateControl = document.getElementById("rateControl");
-
-      function announce(message) {
-        document.getElementById("globalStatus").textContent = message;
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
       }
+    }
 
-      function showStatus(element, message) {
-        element.textContent = message;
-      }
+    function showScreen(id) {
+      var target = document.getElementById(id);
+      if (!target) return;
 
-      function stopSpeech() {
-        speechGeneration++;
+      stopSpeech();
 
-        if ("speechSynthesis" in window) {
-          window.speechSynthesis.cancel();
-        }
-      }
+      screens.forEach(function (screen) {
+        var active = screen.id === id;
+        screen.classList.toggle("active", active);
+        screen.setAttribute("aria-hidden", active ? "false" : "true");
+      });
 
-      function showScreen(screenId) {
-        const target = document.getElementById(screenId);
-        if (!target) return;
+      header.hidden = id !== "home";
 
+      var heading = target.querySelector("h2");
+      if (heading) heading.focus();
+
+      window.scrollTo(0, 0);
+    }
+
+    // Menu navigation
+    document.querySelectorAll("[data-open]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        showScreen(button.getAttribute("data-open"));
+      });
+    });
+
+    document.querySelectorAll("[data-home]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        showScreen("home");
+      });
+    });
+
+    // Exit button
+    document.getElementById("exitButton").addEventListener("click", function () {
+      if (window.confirm("Do you want to exit Accessible Reader?")) {
         stopSpeech();
+        window.alert("To exit, close this browser tab.");
+      }
+    });
 
-        screens.forEach(function (screen) {
-          const isActive = screen === target;
-          screen.classList.toggle("active", isActive);
-          screen.setAttribute("aria-hidden", String(!isActive));
-        });
+    // PDF reader
+    var pdfFile = document.getElementById("pdfFile");
+    var pdfOutput = document.getElementById("pdfOutput");
+    var openPdf = document.getElementById("openPdf");
 
-        mainHeader.hidden = screenId !== "home";
+    pdfFile.addEventListener("change", function () {
+      pdfOutput.replaceChildren();
+      openPdf.disabled = true;
 
-        const heading = target.querySelector("h2");
-        if (heading) {
-          heading.focus();
-        }
-
-        window.scrollTo({ top: 0, behavior: "auto" });
+      if (currentPdfUrl) {
+        URL.revokeObjectURL(currentPdfUrl);
+        currentPdfUrl = null;
       }
 
-      document.querySelectorAll("[data-open]").forEach(function (button) {
-        button.addEventListener("click", function () {
-          showScreen(button.dataset.open);
-        });
-      });
+      var file = pdfFile.files && pdfFile.files[0];
+      if (!file) {
+        status("pdfStatus", "No PDF selected.");
+        return;
+      }
 
-      document.querySelectorAll("[data-home]").forEach(function (button) {
-        button.addEventListener("click", function () {
-          showScreen("home");
-        });
-      });
-
-      // EXIT: a website cannot reliably close its own tab.
-      document.getElementById("exitButton").addEventListener("click", function () {
-        const confirmed = window.confirm(
-          "Do you want to leave Accessible Reader? Unsaved text may be lost."
-        );
-
-        if (confirmed) {
-          stopSpeech();
-          announce(
-            "To exit Accessible Reader, close this browser tab or window."
-          );
-          window.alert(
-            "To exit Accessible Reader, close this browser tab or window."
-          );
-        }
-      });
-
-      // PDF READER
-      pdfFile.addEventListener("change", function () {
-        const file = pdfFile.files && pdfFile.files[0];
-
-        pdfResult.replaceChildren();
-        openPdfButton.disabled = true;
-
-        if (currentPdfUrl) {
-          URL.revokeObjectURL(currentPdfUrl);
-          currentPdfUrl = null;
-        }
-
-        if (!file) {
-          showStatus(pdfStatus, "No PDF selected.");
-          return;
-        }
-
-        const isPdf = file.type === "application/pdf" ||
-          file.name.toLowerCase().endsWith(".pdf");
-
-        if (!isPdf) {
-          showStatus(pdfStatus, "Please choose a PDF file.");
-          pdfFile.value = "";
-          return;
-        }
-
-        currentPdfUrl = URL.createObjectURL(file);
-
-        const frame = document.createElement("iframe");
-        frame.className = "pdf-frame";
-        frame.title = "Selected PDF document";
-        frame.src = currentPdfUrl;
-
-        const fallback = document.createElement("p");
-        fallback.textContent =
-          "If the document does not appear, use the Open PDF in New Tab button.";
-
-        pdfResult.append(frame, fallback);
-        openPdfButton.disabled = false;
-
-        showStatus(
-          pdfStatus,
-          "PDF loaded. Your browser controls how the document is displayed and read."
-        );
-      });
-
-      openPdfButton.addEventListener("click", function () {
-        if (!currentPdfUrl) return;
-
-        const opened = window.open(currentPdfUrl, "_blank", "noopener");
-
-        if (!opened) {
-          showStatus(
-            pdfStatus,
-            "The browser blocked the new tab. Allow pop-ups or use the embedded document."
-          );
-        }
-      });
-
-      document.getElementById("clearPdfButton").addEventListener("click", function () {
+      if (file.type !== "application/pdf" &&
+          !file.name.toLowerCase().endsWith(".pdf")) {
+        status("pdfStatus", "Please choose a PDF file.");
         pdfFile.value = "";
-        pdfResult.replaceChildren();
-        openPdfButton.disabled = true;
+        return;
+      }
 
-        if (currentPdfUrl) {
-          URL.revokeObjectURL(currentPdfUrl);
-          currentPdfUrl = null;
-        }
+      currentPdfUrl = URL.createObjectURL(file);
 
-        showStatus(pdfStatus, "PDF cleared.");
+      var frame = document.createElement("iframe");
+      frame.title = "PDF document";
+      frame.src = currentPdfUrl;
+      pdfOutput.appendChild(frame);
+
+      openPdf.disabled = false;
+      status("pdfStatus", "PDF loaded. Use the browser's PDF controls to read it.");
+    });
+
+    openPdf.addEventListener("click", function () {
+      if (currentPdfUrl) {
+        var link = document.createElement("a");
+        link.href = currentPdfUrl;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.click();
+      }
+    });
+
+    document.getElementById("clearPdf").addEventListener("click", function () {
+      pdfFile.value = "";
+      pdfOutput.replaceChildren();
+      openPdf.disabled = true;
+
+      if (currentPdfUrl) {
+        URL.revokeObjectURL(currentPdfUrl);
+        currentPdfUrl = null;
+      }
+
+      status("pdfStatus", "PDF cleared.");
+    });
+
+    // Image selection and preview
+    var imageFile = document.getElementById("imageFile");
+    var imagePreview = document.getElementById("imagePreview");
+    var imageText = document.getElementById("imageText");
+
+    imageFile.addEventListener("change", function () {
+      if (currentImageUrl) {
+        URL.revokeObjectURL(currentImageUrl);
+        currentImageUrl = null;
+      }
+
+      imagePreview.removeAttribute("src");
+      imagePreview.hidden = true;
+
+      var file = imageFile.files && imageFile.files[0];
+
+      if (!file) {
+        status("imageStatus", "No image selected.");
+        return;
+      }
+
+      if (!file.type || file.type.indexOf("image/") !== 0) {
+        imageFile.value = "";
+        status("imageStatus", "Please choose an image file.");
+        return;
+      }
+
+      currentImageUrl = URL.createObjectURL(file);
+      imagePreview.src = currentImageUrl;
+      imagePreview.hidden = false;
+      imageText.value = "";
+
+      status("imageStatus", "Image loaded. You can enter or paste recognized text below.");
+    });
+
+    document.getElementById("sendImageText").addEventListener("click", function () {
+      var text = imageText.value.trim();
+
+      if (!text) {
+        status("imageStatus", "No text entered. Use OCR on your device or type the text first.");
+        imageText.focus();
+        return;
+      }
+
+      document.getElementById("readerText").value = text;
+      showScreen("textScreen");
+      status("readerStatus", "Text transferred from Image Scan.");
+    });
+
+    document.getElementById("clearImage").addEventListener("click", function () {
+      imageFile.value = "";
+      imageText.value = "";
+      imagePreview.removeAttribute("src");
+      imagePreview.hidden = true;
+
+      if (currentImageUrl) {
+        URL.revokeObjectURL(currentImageUrl);
+        currentImageUrl = null;
+      }
+
+      status("imageStatus", "Image and text cleared.");
+    });
+
+    // Speech voices
+    var voiceSelect = document.getElementById("voiceSelect");
+
+    function loadVoices() {
+      if (!("speechSynthesis" in window)) return;
+
+      voices = window.speechSynthesis.getVoices();
+      var previous = voiceSelect.value;
+      voiceSelect.replaceChildren();
+
+      var defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent = "Default device voice";
+      voiceSelect.appendChild(defaultOption);
+
+      voices.forEach(function (voice, index) {
+        var option = document.createElement("option");
+        option.value = String(index);
+        option.textContent = voice.name + (voice.lang ? " (" + voice.lang + ")" : "");
+        voiceSelect.appendChild(option);
       });
 
-      // IMAGE PREVIEW
-      imageFile.addEventListener("change", function () {
-        const file = imageFile.files && imageFile.files[0];
+      if (previous && Number(previous) < voices.length) {
+        voiceSelect.value = previous;
+      }
+    }
 
-        if (currentImageUrl) {
-          URL.revokeObjectURL(currentImageUrl);
-          currentImageUrl = null;
-        }
+    if ("speechSynthesis" in window) {
+      loadVoices();
 
-        imagePreview.removeAttribute("src");
-        imagePreview.hidden = true;
-        recognizeButton.disabled = true;
-        sendImageTextButton.disabled = true;
-        recognizedText.value = "";
+      if (typeof window.speechSynthesis.addEventListener === "function") {
+        window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+      }
+    }
 
-        const token = ++recognitionToken;
+    // Read text in manageable chunks
+    document.getElementById("speakButton").addEventListener("click", function () {
+      var text = document.getElementById("readerText").value.trim();
 
-        if (!file) {
-          showStatus(imageStatus, "No image selected.");
+      if (!text) {
+        status("readerStatus", "Please enter some text first.");
+        document.getElementById("readerText").focus();
+        return;
+      }
+
+      if (!("speechSynthesis" in window) ||
+          typeof window.SpeechSynthesisUtterance !== "function") {
+        status("readerStatus", "Speech is not supported in this browser. Try your device's screen reader.");
+        return;
+      }
+
+      stopSpeech();
+      var thisRun = speechRun;
+      var chunkSize = 1200;
+      speechChunks = [];
+
+      for (var i = 0; i < text.length; i += chunkSize) {
+        speechChunks.push(text.slice(i, i + chunkSize));
+      }
+
+      speechIndex = 0;
+
+      function speakNext() {
+        if (thisRun !== speechRun) return;
+
+        if (speechIndex >= speechChunks.length) {
+          status("readerStatus", "Finished reading.");
           return;
         }
 
-        if (!file.type.startsWith("image/")) {
-          imageFile.value = "";
-          showStatus(imageStatus, "Please choose an image file.");
-          return;
+        var utterance = new SpeechSynthesisUtterance(speechChunks[speechIndex]);
+        var rate = Number(document.getElementById("speechRate").value);
+        utterance.rate = rate || 1;
+
+        if (voiceSelect.value !== "") {
+          var selectedVoice = voices[Number(voiceSelect.value)];
+          if (selectedVoice) {
+            utterance.voice = selectedVoice;
+            utterance.lang = selectedVoice.lang;
+          }
         }
 
-        currentImageUrl = URL.createObjectURL(file);
-        imagePreview.src = currentImageUrl;
-        imagePreview.alt = "Selected image: " + file.name;
-        imagePreview.hidden = false;
-        recognizeButton.disabled = false;
+        utterance.onend = function () {
+          if (thisRun !== speechRun) return;
+          speechIndex++;
+          speakNext();
+        };
 
-        showStatus(
-          imageStatus,
-          "Image loaded. You can try text recognition if your browser supports it."
+        utterance.onerror = function () {
+          if (thisRun === speechRun) {
+            status("readerStatus", "Speech encountered an error. Try pressing Read Text again.");
+          }
+        };
+
+        window.speechSynthesis.speak(utterance);
+      }
+
+      status("readerStatus", "Reading text.");
+      speakNext();
+    });
+
+    document.getElementById("pauseButton").addEventListener("click", function () {
+      if (!("speechSynthesis" in window)) {
+        status("readerStatus", "Speech is unavailable.");
+        return;
+      }
+
+      if (window.speechSynthesis.speaking &&
+          !window.speechSynthesis.paused) {
+        window.speechSynthesis.pause();
+        status("readerStatus", "Reading paused.");
+      } else {
+        status("readerStatus", "No active reading to pause.");
+      }
+    });
+
+    document.getElementById("resumeButton").addEventListener("click", function () {
+      if (!("speechSynthesis" in window)) {
+        status("readerStatus", "Speech is unavailable.");
+        return;
+      }
+
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        status("readerStatus", "Reading resumed.");
+      } else {
+        status("readerStatus", "There is no paused reading.");
+      }
+    });
+
+    document.getElementById("stopButton").addEventListener("click", function () {
+      stopSpeech();
+      status("readerStatus", "Reading stopped.");
+    });
+
+    document.getElementById("clearText").addEventListener("click", function () {
+      stopSpeech();
+      document.getElementById("readerText").value = "";
+      status("readerStatus", "Text cleared.");
+      document.getElementById("readerText").focus();
+    });
+
+    // Save and load text locally
+    document.getElementById("saveText").addEventListener("click", function () {
+      try {
+        localStorage.setItem(
+          "accessibleReaderText",
+          document.getElementById("readerText").value
         );
+        status("readerStatus", "Text saved on this device.");
+      } catch (error) {
+        status("readerStatus", "Unable to save. Browser storage may be disabled.");
+      }
+    });
 
-        // Prevent an obsolete recognition result from being used after a new image.
-        imagePreview.dataset.token = String(token);
-      });
+    document.getElementById("loadText").addEventListener("click", function () {
+      try {
+        var saved = localStorage.getItem("accessibleReaderText");
 
-      recognizeButton.addEventListener("click", async function () {
-        if (!currentImageUrl || !imagePreview.complete) {
-          showStatus(imageStatus, "Please select an image first.");
+        if (saved === null) {
+          status("readerStatus", "No saved text found.");
           return;
         }
 
-        const TextDetectorConstructor = window.TextDetector;
+        document.getElementById("readerText").value = saved;
+        status("readerStatus", "Saved text loaded.");
+      } catch (error) {
+        status("readerStatus", "Unable to load saved text.");
+      }
+    });
 
-        if (typeof TextDetectorConstructor !== "function") {
-          showStatus(
-            imageStatus,
-            "Built-in text recognition is not supported in this browser. Use your device's OCR feature or enter the text manually."
-          );
-          return;
-        }
+    document.getElementById("downloadText").addEventListener("click", function () {
+      var text = document.getElementById("readerText").value;
 
-        const token = recognitionToken;
-        recognizeButton.disabled = true;
-        showStatus(imageStatus, "Attempting to recognize text. Please wait.");
+      if (!text.trim()) {
+        status("readerStatus", "Enter some text before downloading.");
+        return;
+      }
 
-        try {
-          const detector = new TextDetectorConstructor();
-          const results = await detector.detect(imagePreview);
+      var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement("a");
 
-          if (token !== recognitionToken) return;
+      link.href = url;
+      link.download = "accessible-reader-text.txt";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
 
-          const lines = results
-            .map(function (item) {
-              return item.rawValue || "";
-            })
-            .filter(Boolean);
+      setTimeout(function () {
+        URL.revokeObjectURL(url);
+      }, 1000);
 
-          if (lines.length === 0) {
-            showStatus(
-              imageStatus,
-              "No text was detected. Try a clearer image or enter the text manually."
-            );
-            return;
-          }
+      status("readerStatus", "Download started.");
+    });
 
-          recognizedText.value = lines.join("\n");
-          sendImageTextButton.disabled = false;
+    window.addEventListener("beforeunload", function () {
+      stopSpeech();
+      if (currentPdfUrl) URL.revokeObjectURL(currentPdfUrl);
+      if (currentImageUrl) URL.revokeObjectURL(currentImageUrl);
+    });
+  }
 
-          showStatus(
-            imageStatus,
-            "Text recognized. Review the result for mistakes before reading it."
-          );
-        } catch (error) {
-          if (token !== recognitionToken) return;
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startApp);
+  } else {
+    startApp();
+  }
+})();
+</script>
 
-          showStatus(
-            imageStatus,
-            "Text recognition failed or is unavailable. Try another image or enter the text manually."
-          );
-        } finally {
-          if (token === recognitionToken) {
-            recognizeButton.disabled = false;
-          }
-        }
-      });
-
-      recognizedText.addEventListener("input", function () {
-        sendImageTextButton.disabled = recognizedText.value.trim().length === 0;
-      });
-
-      sendImageTextButton.addEventListener("click", function () {
-        const text = recognizedText.value.trim();
-
-        if (!text) {
-          showStatus(imageStatus, "There is no text to send.");
-     
+</body>
+</html>
