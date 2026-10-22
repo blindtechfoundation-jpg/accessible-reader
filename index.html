@@ -6,131 +6,209 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#000000">
 <title>Accessible Reader - Developed by Saifulla</title>
+
 <style>
 * { box-sizing: border-box; }
+
 body {
-  margin: 0; padding: 16px; background: #000; color: #ff0;
+  margin: 0;
+  padding: 16px;
+  background: #000;
+  color: #ff0;
   font: 20px/1.6 Arial, sans-serif;
 }
-h1 { font-size: 2rem; margin-bottom: 0; }
-.credit { font-weight: bold; margin-top: 0; }
+
+h1 { margin-bottom: 0; font-size: 2rem; }
+.credit { margin-top: 0; font-weight: bold; }
+
 button, input, textarea, select { font: inherit; }
+
 button {
-  display: block; width: 100%; min-height: 65px; padding: 14px;
-  margin: 12px 0; background: #111; color: #ff0;
-  border: 3px solid #ff0; border-radius: 10px;
-  font-weight: bold; text-align: left; cursor: pointer;
+  display: block;
+  width: 100%;
+  min-height: 65px;
+  margin: 12px 0;
+  padding: 14px;
+  border: 3px solid #ff0;
+  border-radius: 10px;
+  background: #111;
+  color: #ff0;
+  font-weight: bold;
+  text-align: left;
+  cursor: pointer;
 }
-button:focus-visible, input:focus-visible, textarea:focus-visible,
-select:focus-visible {
-  outline: 4px solid white; outline-offset: 3px;
-}
+
+button:disabled { opacity: .55; }
+
 input, textarea, select {
-  display: block; width: 100%; padding: 12px; margin: 8px 0 18px;
-  background: #111; color: #ff0; border: 2px solid #ff0;
+  display: block;
+  width: 100%;
+  margin: 10px 0 20px;
+  padding: 12px;
+  border: 2px solid #ff0;
   border-radius: 8px;
+  background: #111;
+  color: #ff0;
 }
+
+input[type="file"] {
+  min-height: 65px;
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button {
+  min-height: 42px;
+  margin-right: 10px;
+  padding: 8px;
+  border: 2px solid #ff0;
+  border-radius: 6px;
+  background: #222;
+  color: #ff0;
+  font-weight: bold;
+}
+
 textarea { min-height: 180px; resize: vertical; }
 label { font-weight: bold; }
+
+button:focus-visible, input:focus-visible,
+textarea:focus-visible, select:focus-visible {
+  outline: 4px solid white;
+  outline-offset: 3px;
+}
+
 .screen { display: none; }
 .screen.active { display: block; }
-.status { padding: 12px; border: 1px solid #ff0; border-radius: 8px; overflow-wrap: anywhere; }
+
+.status {
+  padding: 12px;
+  border: 1px solid #ff0;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
 .status:empty { display: none; }
-img { display: block; max-width: 100%; max-height: 60vh; margin: 15px auto; }
-iframe { width: 100%; height: 60vh; background: white; border: 2px solid #ff0; }
-.note { font-size: 0.9rem; }
+
+img {
+  display: block;
+  max-width: 100%;
+  max-height: 60vh;
+  margin: 15px auto;
+}
+
+iframe {
+  width: 100%;
+  height: 60vh;
+  background: white;
+  border: 2px solid #ff0;
+}
+
+.note { font-size: .9rem; }
+footer { margin-top: 25px; padding-top: 12px; border-top: 2px solid #ff0; }
 [hidden] { display: none !important; }
-footer { margin-top: 25px; border-top: 2px solid #ff0; padding-top: 12px; }
+
 @media (min-width: 700px) {
   body { max-width: 850px; margin: auto; padding: 25px; }
 }
 </style>
 </head>
-<body>
 
+<body>
 <header id="header">
   <h1>Accessible Reader</h1>
   <p class="credit">Developed by Saifulla</p>
 </header>
 
 <main>
-<section id="home" class="screen active" aria-labelledby="homeTitle">
-  <h2 id="homeTitle" tabindex="-1">Main Menu</h2>
-  <button type="button" data-open="pdfScreen">📄 PDF Reader</button>
-  <button type="button" data-open="imageScreen">📷 Image Scan</button>
-  <button type="button" data-open="textScreen">🔊 Text Reader</button>
-  <footer>
-    <button type="button" id="exitButton">🚪 Exit Application</button>
-  </footer>
-</section>
+  <!-- MAIN MENU -->
+  <section id="home" class="screen active" aria-labelledby="homeTitle">
+    <h2 id="homeTitle" tabindex="-1">Main Menu</h2>
+    <button type="button" data-open="pdfScreen">📄 PDF Reader</button>
+    <button type="button" data-open="imageScreen">📷 Image Scan</button>
+    <button type="button" data-open="textScreen">🔊 Text Reader</button>
+    <footer>
+      <button type="button" id="exitButton">🚪 Exit Application</button>
+    </footer>
+  </section>
 
-<section id="pdfScreen" class="screen" aria-labelledby="pdfTitle" aria-hidden="true">
-  <button type="button" data-home>⬅ Back to Main Menu</button>
-  <h2 id="pdfTitle" tabindex="-1">PDF Reader</h2>
-  <p>Select the button below to choose a PDF from your device.</p>
+  <!-- PDF READER -->
+  <section id="pdfScreen" class="screen" aria-labelledby="pdfTitle" aria-hidden="true">
+    <button type="button" data-home>⬅ Back to Main Menu</button>
+    <h2 id="pdfTitle" tabindex="-1">PDF Reader</h2>
 
-  <button type="button" id="choosePdf">📂 Choose PDF File</button>
-  <input id="pdfFile" type="file" accept=".pdf,application/pdf" hidden>
+    <p>Tap the file-selection control below and choose a PDF from your phone.</p>
 
-  <p id="pdfStatus" class="status" role="status" aria-live="polite"></p>
-  <div id="pdfOutput"></div>
-  <button type="button" id="openPdf" disabled>Open PDF in New Tab</button>
-  <button type="button" id="clearPdf">Clear PDF</button>
-  <p class="note">Reading support depends on your browser's PDF viewer and the PDF document.</p>
-</section>
+    <label for="pdfFile">Choose a PDF document</label>
+    <input id="pdfFile" type="file" accept=".pdf,application/pdf">
 
-<section id="imageScreen" class="screen" aria-labelledby="imageTitle" aria-hidden="true">
-  <button type="button" data-home>⬅ Back to Main Menu</button>
-  <h2 id="imageTitle" tabindex="-1">Image Scan</h2>
-  <p>Choose a photo from your device, or use your device's camera option if offered.</p>
+    <p id="pdfStatus" class="status" role="status" aria-live="polite"></p>
+    <div id="pdfOutput"></div>
 
-  <button type="button" id="chooseImage">📷 Choose Photo</button>
-  <input id="imageFile" type="file" accept="image/*" capture="environment" hidden>
+    <button type="button" id="openPdf" disabled>Open PDF in New Tab</button>
+    <button type="button" id="clearPdf">Clear PDF</button>
 
-  <p id="imageStatus" class="status" role="status" aria-live="polite"></p>
-  <img id="imagePreview" alt="Selected photo preview" hidden>
+    <p class="note">
+      PDFs are displayed using your browser's built-in viewer. Accessibility
+      depends on the browser and whether the PDF contains selectable text.
+    </p>
+  </section>
 
-  <label for="imageText">Text from the photo</label>
-  <textarea id="imageText" placeholder="Type or paste text recognized from the photo."></textarea>
-  <button type="button" id="sendImageText">Send Text to Reader</button>
-  <button type="button" id="clearImage">Clear Photo and Text</button>
+  <!-- IMAGE SCAN -->
+  <section id="imageScreen" class="screen" aria-labelledby="imageTitle" aria-hidden="true">
+    <button type="button" data-home>⬅ Back to Main Menu</button>
+    <h2 id="imageTitle" tabindex="-1">Image Scan</h2>
 
-  <p class="note">
-    This version previews photos but does not include an OCR engine.
-    Use your phone's text recognition feature and paste the recognized
-    text above to have it read aloud.
-  </p>
-</section>
+    <p>Choose a photo from your phone. Use your camera option if your device offers it.</p>
 
-<section id="textScreen" class="screen" aria-labelledby="textTitle" aria-hidden="true">
-  <button type="button" data-home>⬅ Back to Main Menu</button>
-  <h2 id="textTitle" tabindex="-1">Text Reader</h2>
+    <label for="imageFile">Choose or take a photo</label>
+    <input id="imageFile" type="file" accept="image/*" capture="environment">
 
-  <label for="readerText">Enter or paste text</label>
-  <textarea id="readerText" placeholder="Type or paste text here."></textarea>
+    <p id="imageStatus" class="status" role="status" aria-live="polite"></p>
+    <img id="imagePreview" alt="Selected photo preview" hidden>
 
-  <button type="button" id="speakButton">🔊 Read Text</button>
-  <button type="button" id="pauseButton">⏸ Pause Reading</button>
-  <button type="button" id="resumeButton">▶ Resume Reading</button>
-  <button type="button" id="stopButton">⏹ Stop Reading</button>
-  <button type="button" id="clearText">Clear Text</button>
+    <label for="imageText">Text from your photo</label>
+    <textarea id="imageText" placeholder="Paste or type recognized text here."></textarea>
 
-  <label for="voiceSelect">Speech voice</label>
-  <select id="voiceSelect"><option value="">Default device voice</option></select>
+    <button type="button" id="sendImageText">Send Text to Reader</button>
+    <button type="button" id="clearImage">Clear Photo and Text</button>
 
-  <label for="speechRate">Speaking speed</label>
-  <select id="speechRate">
-    <option value="0.7">Slow</option>
-    <option value="1" selected>Normal</option>
-    <option value="1.25">Fast</option>
-    <option value="1.5">Very fast</option>
-  </select>
+    <p class="note">
+      This file previews images but does not contain an OCR engine.
+      Use your phone's text recognition feature to recognize text, then paste it above.
+    </p>
+  </section>
 
-  <button type="button" id="saveText">Save Text on This Device</button>
-  <button type="button" id="loadText">Load Saved Text</button>
-  <button type="button" id="downloadText">Download Text File</button>
-  <p id="readerStatus" class="status" role="status" aria-live="polite"></p>
-</section>
+  <!-- TEXT READER -->
+  <section id="textScreen" class="screen" aria-labelledby="textTitle" aria-hidden="true">
+    <button type="button" data-home>⬅ Back to Main Menu</button>
+    <h2 id="textTitle" tabindex="-1">Text Reader</h2>
+
+    <label for="readerText">Text to read aloud</label>
+    <textarea id="readerText" placeholder="Type or paste text here."></textarea>
+
+    <button type="button" id="speakButton">🔊 Read Text</button>
+    <button type="button" id="pauseButton">⏸ Pause Reading</button>
+    <button type="button" id="resumeButton">▶ Resume Reading</button>
+    <button type="button" id="stopButton">⏹ Stop Reading</button>
+    <button type="button" id="clearText">Clear Text</button>
+
+    <label for="voiceSelect">Speech voice</label>
+    <select id="voiceSelect">
+      <option value="">Default device voice</option>
+    </select>
+
+    <label for="speechRate">Speaking speed</label>
+    <select id="speechRate">
+      <option value="0.7">Slow</option>
+      <option value="1" selected>Normal</option>
+      <option value="1.25">Fast</option>
+      <option value="1.5">Very fast</option>
+    </select>
+
+    <button type="button" id="saveText">Save Text on This Device</button>
+    <button type="button" id="loadText">Load Saved Text</button>
+    <button type="button" id="downloadText">Download Text File</button>
+
+    <p id="readerStatus" class="status" role="status" aria-live="polite"></p>
+  </section>
 </main>
 
 <script>
@@ -169,6 +247,7 @@ footer { margin-top: 25px; border-top: 2px solid #ff0; padding-top: 12px; }
     });
 
     $("header").hidden = id !== "home";
+
     const heading = target.querySelector("h2");
     if (heading) heading.focus();
 
@@ -190,17 +269,7 @@ footer { margin-top: 25px; border-top: 2px solid #ff0; padding-top: 12px; }
     }
   });
 
-  // Open the native file picker directly from a user click.
-  // No broad storage permission is needed for user-selected files.
-  $("choosePdf").addEventListener("click", () => {
-    $("pdfFile").click();
-  });
-
-  $("chooseImage").addEventListener("click", () => {
-    $("imageFile").click();
-  });
-
-  // PDF selection
+  // PDF: use the visible native file picker.
   $("pdfFile").addEventListener("change", () => {
     const file = $("pdfFile").files[0];
     $("pdfOutput").replaceChildren();
@@ -212,14 +281,14 @@ footer { margin-top: 25px; border-top: 2px solid #ff0; padding-top: 12px; }
     }
 
     if (!file) {
-      report("pdfStatus", "No file selected. Tap Choose PDF File and select a document.");
+      report("pdfStatus", "No file selected. Please choose a PDF.");
       return;
     }
 
     if (file.type !== "application/pdf" &&
         !file.name.toLowerCase().endsWith(".pdf")) {
-      report("pdfStatus", "That file is not a PDF. Please choose a PDF document.");
       $("pdfFile").value = "";
+      report("pdfStatus", "That file is not a PDF. Please choose a PDF document.");
       return;
     }
 
@@ -231,11 +300,12 @@ footer { margin-top: 25px; border-top: 2px solid #ff0; padding-top: 12px; }
     $("pdfOutput").appendChild(frame);
 
     $("openPdf").disabled = false;
-    report("pdfStatus", "Selected: " + file.name);
+    report("pdfStatus", "PDF selected: " + file.name);
   });
 
   $("openPdf").addEventListener("click", () => {
     if (!pdfUrl) return;
+
     const link = document.createElement("a");
     link.href = pdfUrl;
     link.target = "_blank";
@@ -256,7 +326,7 @@ footer { margin-top: 25px; border-top: 2px solid #ff0; padding-top: 12px; }
     report("pdfStatus", "PDF cleared.");
   });
 
-  // Photo selection and preview
+  // Photo: use the visible native file picker.
   $("imageFile").addEventListener("change", () => {
     const file = $("imageFile").files[0];
 
@@ -269,13 +339,13 @@ footer { margin-top: 25px; border-top: 2px solid #ff0; padding-top: 12px; }
     $("imagePreview").hidden = true;
 
     if (!file) {
-      report("imageStatus", "No photo selected. Tap Choose Photo and select an image.");
+      report("imageStatus", "No photo selected. Please choose an image.");
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
+    if (!file.type || !file.type.startsWith("image/")) {
       $("imageFile").value = "";
-      report("imageStatus", "Please select an image file.");
+      report("imageStatus", "Please choose an image file.");
       return;
     }
 
@@ -291,7 +361,7 @@ footer { margin-top: 25px; border-top: 2px solid #ff0; padding-top: 12px; }
     const text = $("imageText").value.trim();
 
     if (!text) {
-      report("imageStatus", "Enter or paste recognized text first.");
+      report("imageStatus", "Paste or type recognized text first.");
       $("imageText").focus();
       return;
     }
@@ -315,7 +385,7 @@ footer { margin-top: 25px; border-top: 2px solid #ff0; padding-top: 12px; }
     report("imageStatus", "Photo and text cleared.");
   });
 
-  // Speech synthesis
+  // Speech voices
   function loadVoices() {
     if (!("speechSynthesis" in window)) return;
 
@@ -323,16 +393,17 @@ footer { margin-top: 25px; border-top: 2px solid #ff0; padding-top: 12px; }
     const previous = $("voiceSelect").value;
     $("voiceSelect").replaceChildren();
 
-    const option = document.createElement("option");
-    option.value = "";
-    option.textContent = "Default device voice";
-    $("voiceSelect").appendChild(option);
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = "Default device voice";
+    $("voiceSelect").appendChild(defaultOption);
 
     voices.forEach((voice, index) => {
-      const item = document.createElement("option");
-      item.value = String(index);
-      item.textContent = voice.name + (voice.lang ? " (" + voice.lang + ")" : "");
-      $("voiceSelect").appendChild(item);
+      const option = document.createElement("option");
+      option.value = String(index);
+      option.textContent =
+        voice.name + (voice.lang ? " (" + voice.lang + ")" : "");
+      $("voiceSelect").appendChild(option);
     });
 
     if (previous && Number(previous) < voices.length) {
@@ -391,7 +462,7 @@ footer { margin-top: 25px; border-top: 2px solid #ff0; padding-top: 12px; }
 
       utterance.onerror = () => {
         if (run === speechRun) {
-          report("readerStatus", "Speech failed. Try pressing Read Text again.");
+          report("readerStatus", "Speech failed. Try Read Text again.");
         }
       };
 
@@ -488,4 +559,5 @@ footer { margin-top: 25px; border-top: 2px solid #ff0; padding-top: 12px; }
 })();
 </script>
 </body>
-</html>
+  </html>
+  
