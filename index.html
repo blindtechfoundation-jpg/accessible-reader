@@ -7,11 +7,10 @@
   
   <!-- PDF.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <!-- Tesseract.js CDN for Image Text Recognition -->
+  <!-- Tesseract.js CDN -->
   <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
-    /* Accessibility Base */
     * {
       box-sizing: border-box;
       touch-action: manipulation;
@@ -21,328 +20,255 @@
     body {
       margin: 0;
       padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.5;
-      transition: background-color 0.2s ease, color 0.2s ease;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #000000;
+      color: #ffff00;
       min-height: 100vh;
-    }
-
-    /* High Visibility Focus Indicators (TalkBack / Keyboard Navigation) */
-    :focus-visible {
-      outline: 4px solid #f59e0b !important;
-      outline-offset: 3px !important;
+      line-height: 1.5;
+      font-size: 19px;
     }
 
     /* THEMES */
-    /* 1. Dark Theme (Default) */
-    body.theme-dark {
-      background-color: #0b0f19;
-      color: #f1f5f9;
-    }
-    .theme-dark .card {
-      background-color: #131c2e;
-      border: 2px solid #27354f;
-    }
-    .theme-dark .input-box {
-      background-color: #070a12;
-      color: #f8fafc;
-      border: 2px solid #3b4d6b;
-    }
-    .theme-dark .btn-secondary {
-      background-color: #1e293b;
-      color: #f8fafc;
-      border: 2px solid #475569;
-    }
-    .theme-dark .status-pill {
-      background-color: #1e293b;
-      color: #38bdf8;
-      border: 1px solid #0284c7;
-    }
-    .theme-dark .menu-btn {
-      background-color: #162033;
-      border: 3px solid #334155;
-      color: #f8fafc;
-    }
-    .theme-dark .menu-btn:hover, .theme-dark .menu-btn:focus {
-      border-color: #f59e0b;
-      background-color: #1e2c47;
-    }
-
-    /* 2. Yellow on Black (Maximum Contrast for Low Vision) */
     body.theme-yellow {
       background-color: #000000 !important;
       color: #ffff00 !important;
     }
-    .theme-yellow .card,
-    .theme-yellow .input-box,
-    .theme-yellow button,
-    .theme-yellow label.btn,
-    .theme-yellow select {
-      background-color: #000000 !important;
-      color: #ffff00 !important;
-      border-color: #ffff00 !important;
+    body.theme-dark {
+      background-color: #090d16 !important;
+      color: #f1f5f9 !important;
     }
-    .theme-yellow .btn-primary {
-      background-color: #ffff00 !important;
-      color: #000000 !important;
-      font-weight: 900 !important;
-    }
-    .theme-yellow .menu-btn {
-      background-color: #000000 !important;
-      border: 3px solid #ffff00 !important;
-      color: #ffff00 !important;
-    }
-    .theme-yellow .status-pill {
-      background-color: #000000 !important;
-      color: #ffff00 !important;
-      border: 2px solid #ffff00 !important;
-    }
-
-    /* 3. Black on White (Clean High Contrast) */
     body.theme-white {
       background-color: #ffffff !important;
       color: #000000 !important;
     }
-    .theme-white .card {
-      background-color: #ffffff !important;
-      border: 2px solid #000000 !important;
-    }
-    .theme-white .input-box {
-      background-color: #ffffff !important;
-      color: #000000 !important;
-      border: 2px solid #000000 !important;
-    }
-    .theme-white button,
-    .theme-white label.btn,
-    .theme-white select {
-      background-color: #ffffff !important;
-      color: #000000 !important;
-      border-color: #000000 !important;
-    }
-    .theme-white .btn-primary {
-      background-color: #000000 !important;
-      color: #ffffff !important;
-    }
-    .theme-white .menu-btn {
-      background-color: #ffffff !important;
-      border: 3px solid #000000 !important;
-      color: #000000 !important;
-    }
-    .theme-white .status-pill {
-      background-color: #f1f5f9 !important;
-      color: #000000 !important;
-      border: 2px solid #000000 !important;
+
+    /* Focus highlight for screen reader users */
+    :focus-visible {
+      outline: 4px solid #f59e0b !important;
+      outline-offset: 4px !important;
     }
 
-    /* Font Sizes */
-    body.size-normal { font-size: 18px; }
-    body.size-large { font-size: 22px; }
-    body.size-xl { font-size: 26px; }
-
-    /* Layout Containers */
     .container {
-      max-width: 800px;
+      max-width: 720px;
       margin: 0 auto;
       padding: 16px;
     }
 
-    /* Header Bar */
-    .header-bar {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    /* Header */
+    .header {
       text-align: center;
-      gap: 8px;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
+      padding: 12px 0 16px 0;
       border-bottom: 2px solid #334155;
+      margin-bottom: 20px;
     }
-
     .app-title {
       margin: 0;
       font-size: 2.2rem;
       font-weight: 900;
       letter-spacing: -0.5px;
     }
-    
-    .developer-badge {
-      font-size: 1.15rem;
-      color: #fbbf24;
-      font-weight: 800;
-      padding: 4px 14px;
-      background: rgba(245, 158, 11, 0.15);
-      border-radius: 8px;
-      border: 1px solid rgba(245, 158, 11, 0.3);
+    .author-badge {
       display: inline-block;
-    }
-
-    /* Theme quick toggles */
-    .theme-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
       margin-top: 6px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #f59e0b;
+      padding: 4px 14px;
+      border: 2px solid #f59e0b;
+      border-radius: 8px;
     }
 
-    /* 3 Main Icon Cards on Hub (Clean, Zero Clutter) */
-    .menu-grid {
+    /* Theme switcher */
+    .theme-nav {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .theme-btn {
+      padding: 6px 14px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 2px solid currentColor;
+      background: transparent;
+      color: inherit;
+    }
+
+    /* 3 Main Menu Buttons (Big Icons, Zero Text Clutter) */
+    .menu-list {
       display: flex;
       flex-direction: column;
       gap: 18px;
       margin: 20px 0;
     }
 
-    .menu-btn {
+    .big-icon-btn {
       display: flex;
       align-items: center;
       gap: 20px;
-      padding: 22px 24px;
+      width: 100%;
+      min-height: 84px;
+      padding: 18px 24px;
+      font-size: 1.6rem;
+      font-weight: 900;
       border-radius: 20px;
+      border: 3px solid currentColor;
+      background-color: transparent;
+      color: inherit;
       cursor: pointer;
-      text-decoration: none;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-      transition: transform 0.12s, border-color 0.15s, background-color 0.15s;
+      text-align: left;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
       user-select: none;
+      transition: transform 0.1s, background-color 0.15s;
     }
-    .menu-btn:active {
+    .big-icon-btn:active {
       transform: scale(0.97);
     }
-
-    .menu-icon {
+    .big-icon-btn .icon {
       font-size: 3.2rem;
       line-height: 1;
       flex-shrink: 0;
     }
-
-    .menu-text-title {
-      font-size: 1.5rem;
-      font-weight: 900;
-      display: block;
-      margin-bottom: 2px;
-    }
-    
-    .menu-text-sub {
-      font-size: 1rem;
-      opacity: 0.85;
-      display: block;
-    }
-
-    .menu-arrow {
+    .big-icon-btn .arrow {
       margin-left: auto;
-      font-size: 1.8rem;
-      font-weight: 900;
-      opacity: 0.8;
+      font-size: 2rem;
     }
 
-    /* Common Card Styling inside Windows */
-    .card {
-      border-radius: 18px;
-      padding: 22px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    .theme-yellow .big-icon-btn {
+      border-color: #ffff00;
+      background-color: #111100;
+    }
+    .theme-yellow .big-icon-btn:hover {
+      background-color: #222200;
     }
 
-    .card-title {
-      margin-top: 0;
-      margin-bottom: 16px;
-      font-size: 1.5rem;
-      font-weight: 900;
+    .theme-dark .big-icon-btn {
+      border-color: #3b82f6;
+      background-color: #131c2e;
+      color: #ffffff;
+    }
+    .theme-dark .big-icon-btn:hover {
+      background-color: #1e2c47;
+      border-color: #60a5fa;
+    }
+
+    .theme-white .big-icon-btn {
+      border-color: #000000;
+      background-color: #f1f5f9;
+      color: #000000;
+    }
+    .theme-white .big-icon-btn:hover {
+      background-color: #e2e8f0;
+    }
+
+    /* Exit Button */
+    .exit-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      min-height: 60px;
+      margin-top: 24px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      border-radius: 14px;
+      border: 2px solid #ef4444;
+      background-color: #7f1d1d;
+      color: #ffffff;
+      cursor: pointer;
+    }
+    .exit-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Back Button inside dedicated windows */
+    .back-btn {
       display: flex;
       align-items: center;
       gap: 12px;
+      width: 100%;
+      min-height: 60px;
+      padding: 12px 20px;
+      margin-bottom: 20px;
+      font-size: 1.3rem;
+      font-weight: 900;
+      border-radius: 14px;
+      border: 2px solid currentColor;
+      background-color: transparent;
+      color: inherit;
+      cursor: pointer;
+    }
+    .back-btn:active {
+      transform: scale(0.98);
     }
 
-    .button-group {
+    /* Action Buttons in Windows */
+    .btn-row {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      margin-bottom: 16px;
+      margin: 16px 0;
     }
-
-    /* Large Touch Friendly Action Buttons */
-    .btn {
+    .action-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
       min-height: 56px;
       padding: 14px 22px;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: bold;
       border-radius: 14px;
+      border: 2px solid currentColor;
+      background-color: transparent;
+      color: inherit;
       cursor: pointer;
-      text-decoration: none;
-      transition: transform 0.1s, opacity 0.2s;
       user-select: none;
     }
-    .btn:active {
+    .action-btn:active {
       transform: scale(0.97);
     }
 
-    .btn-primary {
-      background-color: #f59e0b;
-      color: #0f172a;
-      border: 2px solid #fbbf24;
-    }
-    .btn-primary:hover {
-      background-color: #d97706;
+    .btn-primary-look {
+      background-color: #f59e0b !important;
+      color: #000000 !important;
+      border-color: #fbbf24 !important;
+      font-weight: 900 !important;
     }
 
-    .btn-danger {
-      background-color: #991b1b;
-      color: #ffffff;
-      border: 2px solid #ef4444;
-    }
-    .btn-danger:hover {
-      background-color: #b91c1c;
+    .btn-danger-look {
+      background-color: #991b1b !important;
+      color: #ffffff !important;
+      border-color: #ef4444 !important;
     }
 
-    .btn-success {
-      background-color: #065f46;
-      color: #ecfdf5;
-      border: 2px solid #10b981;
-    }
-    .btn-success:hover {
-      background-color: #047857;
-    }
-
-    .btn-back {
-      background-color: #334155;
-      color: #f8fafc;
-      border: 2px solid #64748b;
-      font-size: 1.1rem;
-      font-weight: 900;
-      margin-bottom: 18px;
-      width: 100%;
-      justify-content: flex-start;
-      padding-left: 20px;
-    }
-    .btn-back:hover {
-      background-color: #475569;
-    }
-
-    /* Text Output Areas */
-    .text-output-area {
+    /* Textarea for Reader & Extracted text */
+    .reader-textarea {
       width: 100%;
       min-height: 280px;
       padding: 16px;
-      font-size: 1.2rem;
+      font-size: 1.25rem;
       font-family: inherit;
       line-height: 1.7;
-      border-radius: 12px;
+      border-radius: 14px;
+      border: 2px solid currentColor;
+      background-color: transparent;
+      color: inherit;
       resize: vertical;
-      margin-bottom: 14px;
+      margin: 14px 0;
     }
 
-    /* Sliders & Dropdown */
+    /* Settings grid */
     .settings-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
-      margin-top: 16px;
+      margin-top: 18px;
       padding-top: 16px;
-      border-top: 1px solid rgba(255,255,255,0.15);
+      border-top: 2px solid currentColor;
     }
     .setting-item {
       display: flex;
@@ -351,21 +277,24 @@
     }
     .setting-item label {
       font-weight: bold;
-      font-size: 1rem;
+      font-size: 1.05rem;
     }
     .setting-item input[type="range"] {
       height: 40px;
-      accent-color: #f59e0b;
       cursor: pointer;
+      accent-color: #f59e0b;
     }
     .setting-item select {
-      min-height: 50px;
-      padding: 8px 12px;
-      border-radius: 10px;
+      min-height: 52px;
+      padding: 10px 14px;
       font-size: 1.05rem;
+      border-radius: 10px;
+      border: 2px solid currentColor;
+      background: transparent;
+      color: inherit;
     }
 
-    /* Screen reader only utility */
+    /* Live region */
     .sr-only {
       position: absolute;
       width: 1px;
@@ -373,252 +302,275 @@
       padding: 0;
       margin: -1px;
       overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border-width: 0;
-      opacity: 0;
+      clip: rect(0,0,0,0);
+      border: 0;
     }
 
-    .hidden {
-      display: none !important;
-    }
-
-    /* Modal Backdrop */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background-color: rgba(0, 0, 0, 0.88);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 9999;
-    }
-
-    .modal-box {
-      max-width: 480px;
-      width: 100%;
-      border-radius: 20px;
-      padding: 26px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.85);
-      border: 3px solid #f59e0b;
-      text-align: left;
-    }
-    .modal-title {
-      font-size: 1.5rem;
-      font-weight: 900;
-      margin-top: 0;
-      margin-bottom: 12px;
-      color: #f59e0b;
-    }
-    .modal-body {
-      font-size: 1.1rem;
-      margin-bottom: 22px;
-      line-height: 1.6;
+    /* Loading and status banners */
+    .status-msg {
+      padding: 12px 16px;
+      border: 2px solid currentColor;
+      border-radius: 12px;
+      margin: 12px 0;
+      font-weight: bold;
     }
   </style>
 </head>
-<body class="theme-dark size-normal">
+<body class="theme-yellow">
 
-  <!-- Live Announcer for Screen Readers -->
+  <!-- Screen Reader Live Announcer -->
   <div id="sr-announcer" class="sr-only" role="status" aria-live="assertive" aria-atomic="true"></div>
-
-  <!-- Hidden Native File Inputs -->
-  <input type="file" id="pdf-file-input" accept=".pdf,application/pdf" class="sr-only" onchange="handlePdfUpload(event)">
-  <input type="file" id="camera-scan-input" accept="image/*" capture="environment" class="sr-only" onchange="handleImageFile(event)">
-  <input type="file" id="photo-picker-input" accept="image/*" class="sr-only" onchange="handleImageFile(event)">
 
   <div class="container">
     
-    <!-- Top Header: Title & Developer Name -->
-    <header class="header-bar" role="banner">
+    <!-- Top Header (No extra text, clear title & author) -->
+    <header class="header">
       <h1 class="app-title">Accessible Reader</h1>
-      <div class="developer-badge">Developed by Saifulla</div>
+      <div class="author-badge">Developed by Saifulla</div>
 
-      <!-- Quick Theme Options -->
-      <nav class="theme-bar" aria-label="Contrast options">
-        <button type="button" class="btn btn-secondary" style="min-height: 42px; padding: 6px 14px; font-size: 0.95rem;" onclick="setTheme('theme-dark')">🌙 Dark</button>
-        <button type="button" class="btn btn-secondary" style="min-height: 42px; padding: 6px 14px; font-size: 0.95rem;" onclick="setTheme('theme-yellow')">🟡 Yellow</button>
-        <button type="button" class="btn btn-secondary" style="min-height: 42px; padding: 6px 14px; font-size: 0.95rem;" onclick="setTheme('theme-white')">⚪ White</button>
-        <button type="button" class="btn btn-secondary" style="min-height: 42px; padding: 6px 14px; font-size: 0.95rem;" onclick="cycleFontSize()">🔍 Size</button>
+      <!-- Quick Theme Switches -->
+      <nav class="theme-nav" aria-label="Contrast options">
+        <button type="button" class="theme-btn" onclick="setTheme('theme-yellow')">🟡 Yellow</button>
+        <button type="button" class="theme-btn" onclick="setTheme('theme-dark')">🌙 Dark</button>
+        <button type="button" class="theme-btn" onclick="setTheme('theme-white')">⚪ White</button>
       </nav>
     </header>
 
     <!-- ========================================================================= -->
-    <!-- MAIN SCREEN: ONLY 3 LARGE ICONS / BUTTONS (ZERO CLUTTER)                 -->
+    <!-- MAIN SCREEN: ONLY 3 LARGE BUTTONS                                         -->
     <!-- ========================================================================= -->
-    <main id="window-hub">
-      <div class="menu-grid">
-        
+    <main id="view-hub" style="display: block;">
+      <div class="menu-list">
+
         <!-- Button 1: PDF Reader -->
-        <button type="button" class="menu-btn" onclick="openWindow('window-pdf')" aria-label="Open PDF Reader">
-          <span class="menu-icon">📄</span>
-          <div>
-            <span class="menu-text-title">PDF Reader</span>
-            <span class="menu-text-sub">Extract and listen to PDF documents</span>
-          </div>
-          <span class="menu-arrow">➡</span>
+        <button type="button" class="big-icon-btn" onclick="showView('view-pdf')" aria-label="Open PDF Reader">
+          <span class="icon">📄</span>
+          <span>PDF Reader</span>
+          <span class="arrow">➡</span>
         </button>
 
         <!-- Button 2: Image Scan -->
-        <button type="button" class="menu-btn" onclick="openWindow('window-image')" aria-label="Open Image Scan and Camera">
-          <span class="menu-icon">📷</span>
-          <div>
-            <span class="menu-text-title">Image Scan</span>
-            <span class="menu-text-sub">Scan photos and read printed text</span>
-          </div>
-          <span class="menu-arrow">➡</span>
+        <button type="button" class="big-icon-btn" onclick="showView('view-image')" aria-label="Open Image Scan and Camera">
+          <span class="icon">📷</span>
+          <span>Image Scan</span>
+          <span class="arrow">➡</span>
         </button>
 
         <!-- Button 3: Text Reader -->
-        <button type="button" class="menu-btn" onclick="openWindow('window-reader')" aria-label="Open Text Reader and Speech Controls">
-          <span class="menu-icon">🔊</span>
-          <div>
-            <span class="menu-text-title">Text Reader</span>
-            <span class="menu-text-sub">Listen to speech with playback controls</span>
-          </div>
-          <span class="menu-arrow">➡</span>
+        <button type="button" class="big-icon-btn" onclick="showView('view-reader')" aria-label="Open Text Reader and Speech Controls">
+          <span class="icon">🔊</span>
+          <span>Text Reader</span>
+          <span class="arrow">➡</span>
         </button>
 
       </div>
 
       <!-- Exit Button -->
-      <div style="margin-top: 24px; text-align: center;">
-        <button type="button" class="btn btn-danger" style="width: 100%;" onclick="promptExitApp()" aria-label="Exit Application">
-          🚪 Exit Application
-        </button>
-      </div>
+      <button type="button" class="exit-btn" onclick="showView('view-exit')" aria-label="Exit Application">
+        <span>🚪 Exit Application</span>
+      </button>
     </main>
 
     <!-- ========================================================================= -->
     <!-- DEDICATED WINDOW 1: PDF READER                                            -->
     <!-- ========================================================================= -->
-    <section id="window-pdf" class="hidden" aria-labelledby="pdf-heading">
-      <button type="button" class="btn btn-back" onclick="goBackToHub()" aria-label="Back to Main Menu">
-        ⬅ Back to Main Menu
+    <section id="view-pdf" style="display: none;" aria-labelledby="pdf-title">
+      <button type="button" class="back-btn" onclick="showView('view-hub')" aria-label="Back to Main Menu">
+        <span>⬅ Back to Main Menu</span>
       </button>
 
-      <div class="card">
-        <h2 id="pdf-heading" class="card-title">
-          <span>📄</span> PDF Document Reader
-        </h2>
+      <h2 id="pdf-title" style="margin-top: 0; font-size: 1.8rem;">📄 PDF Document Reader</h2>
 
-        <div class="button-group">
-          <!-- Native Label Trigger: Guaranteed to open file chooser on mobile without blocked JS -->
-          <label for="pdf-file-input" class="btn btn-primary" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('pdf-file-input').click()" aria-label="Upload PDF Document">
-            📁 Upload PDF File
-          </label>
-          <button type="button" class="btn btn-secondary" onclick="loadSamplePdfText()" aria-label="Load Sample Document">
-            📋 Load Sample PDF
-          </button>
-        </div>
+      <!-- Native File Input for PDF -->
+      <input type="file" id="pdf-input" accept=".pdf,application/pdf" style="display: none;" onchange="handlePdfFile(event)">
 
-        <div id="pdf-loading-indicator" class="hidden" aria-live="polite" style="margin-bottom: 14px;">
-          <strong style="color: #f59e0b;">⏳ Extracting PDF text... Please wait.</strong>
-        </div>
+      <div class="btn-row">
+        <label for="pdf-input" class="action-btn btn-primary-look" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('pdf-input').click()" aria-label="Upload PDF Document">
+          📁 Upload PDF File
+        </label>
+        <button type="button" class="action-btn" onclick="loadSamplePdf()" aria-label="Load Sample Document">
+          📋 Load Sample PDF
+        </button>
+      </div>
 
-        <!-- Extracted PDF Text Area -->
-        <label for="pdf-text-output" class="sr-only">Extracted PDF Text Content</label>
-        <textarea 
-          id="pdf-text-output" 
-          class="text-output-area input-box" 
-          placeholder="Extracted text from your uploaded PDF will appear here."
-          aria-label="Extracted PDF text"
-          oninput="syncPdfToShared()"></textarea>
+      <div id="pdf-loading-msg" class="status-msg" style="display: none;" aria-live="polite">
+        ⏳ Extracting PDF text... Please wait.
+      </div>
 
-        <div class="button-group">
-          <button type="button" class="btn btn-primary" onclick="readPdfAloudNow()" aria-label="Read PDF Aloud Now">
-            ▶ Read Aloud Now
-          </button>
-          <button type="button" class="btn btn-secondary" onclick="openSharedInReader()" aria-label="Open in Text Reader Window">
-            🔊 Open in Text Reader ➡
-          </button>
-          <button type="button" class="btn btn-secondary" onclick="copyPdfText()" aria-label="Copy PDF Text">
-            📋 Copy Text
-          </button>
-          <button type="button" class="btn btn-danger" onclick="clearPdfText()" aria-label="Clear PDF Text">
-            🗑 Clear
-          </button>
-        </div>
+      <textarea id="pdf-textarea" class="reader-textarea" placeholder="Extracted text from your PDF will appear here." aria-label="Extracted PDF Text" oninput="syncPdfText()"></textarea>
+
+      <div class="btn-row">
+        <button type="button" class="action-btn btn-primary-look" onclick="readPdfNow()" aria-label="Read PDF Aloud Now">
+          ▶ Read Aloud Now
+        </button>
+        <button type="button" class="action-btn" onclick="openPdfInReader()" aria-label="Open in Text Reader Window">
+          🔊 Open in Text Reader ➡
+        </button>
+        <button type="button" class="action-btn" onclick="copyPdfText()" aria-label="Copy PDF Text">
+          📋 Copy Text
+        </button>
+        <button type="button" class="action-btn btn-danger-look" onclick="clearPdfText()" aria-label="Clear PDF Text">
+          🗑 Clear
+        </button>
       </div>
     </section>
 
     <!-- ========================================================================= -->
-    <!-- DEDICATED WINDOW 2: IMAGE SCAN & PHOTO DESCRIPTION                         -->
+    <!-- DEDICATED WINDOW 2: IMAGE SCAN                                            -->
     <!-- ========================================================================= -->
-    <section id="window-image" class="hidden" aria-labelledby="image-heading">
-      <button type="button" class="btn btn-back" onclick="goBackToHub()" aria-label="Back to Main Menu">
-        ⬅ Back to Main Menu
+    <section id="view-image" style="display: none;" aria-labelledby="image-title">
+      <button type="button" class="back-btn" onclick="showView('view-hub')" aria-label="Back to Main Menu">
+        <span>⬅ Back to Main Menu</span>
       </button>
 
-      <div class="card">
-        <h2 id="image-heading" class="card-title">
-          <span>📷</span> Image Scan & Photo Description
-        </h2>
+      <h2 id="image-title" style="margin-top: 0; font-size: 1.8rem;">📷 Image Scan & Photo Description</h2>
 
-        <div class="button-group">
-          <!-- Native Camera Input with capture="environment" -->
-          <label for="camera-scan-input" class="btn btn-primary" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('camera-scan-input').click()" aria-label="Scan Document with Phone Camera">
-            📷 Scan with Camera
-          </label>
+      <!-- Native Inputs for Camera and Photo File -->
+      <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;" onchange="handleImageFile(event)">
+      <input type="file" id="photo-input" accept="image/*" style="display: none;" onchange="handleImageFile(event)">
 
-          <!-- Photo Picker -->
-          <label for="photo-picker-input" class="btn btn-secondary" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('photo-picker-input').click()" aria-label="Upload Photo from Device">
-            🖼 Choose Photo
-          </label>
+      <div class="btn-row">
+        <label for="camera-input" class="action-btn btn-primary-look" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('camera-input').click()" aria-label="Scan Document with Camera">
+          📷 Scan with Camera
+        </label>
+        <label for="photo-input" class="action-btn" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('photo-input').click()" aria-label="Upload Photo from Device">
+          🖼 Choose Photo
+        </label>
+        <button type="button" class="action-btn" onclick="loadSamplePhoto()" aria-label="Test Sample Photo">
+          ⚡ Sample Photo
+        </button>
+      </div>
 
-          <button type="button" class="btn btn-secondary" onclick="loadSampleImageScan()" aria-label="Test Sample Photo">
-            ⚡ Sample Photo
-          </button>
-        </div>
+      <div id="image-loading-msg" class="status-msg" style="display: none;" aria-live="polite">
+        🔍 Scanning image with OCR... Please wait.
+      </div>
 
-        <!-- Image Info -->
-        <div id="image-info-box" class="hidden" style="margin-bottom: 14px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.25);">
-          <span id="image-meta-text">Image details</span>
-        </div>
+      <textarea id="image-textarea" class="reader-textarea" placeholder="Recognized text from your camera scan or photo will appear here." aria-label="Extracted Image Text" oninput="syncImageText()"></textarea>
 
-        <!-- Extracted Image Text Area -->
-        <label for="image-text-output" class="sr-only">Extracted Photo Text Content</label>
-        <textarea 
-          id="image-text-output" 
-          class="text-output-area input-box" 
-          placeholder="Extracted text from your camera scan or photo will appear here."
-          aria-label="Extracted Image text"
-          oninput="syncImageToShared()"></textarea>
-
-        <div class="button-group">
-          <button type="button" class="btn btn-primary" onclick="readImageAloudNow()" aria-label="Read Scanned Text Aloud">
-            ▶ Read Aloud Now
-          </button>
-          <button type="button" class="btn btn-secondary" onclick="openSharedInReader()" aria-label="Open in Text Reader Window">
-            🔊 Open in Text Reader ➡
-          </button>
-          <button type="button" class="btn btn-secondary" onclick="copyImageText()" aria-label="Copy Scanned Text">
-            📋 Copy Text
-          </button>
-          <button type="button" class="btn btn-danger" onclick="clearImageText()" aria-label="Clear Scanned Text">
-            🗑 Clear
-          </button>
-        </div>
+      <div class="btn-row">
+        <button type="button" class="action-btn btn-primary-look" onclick="readImageNow()" aria-label="Read Scanned Text Aloud">
+          ▶ Read Aloud Now
+        </button>
+        <button type="button" class="action-btn" onclick="openImageInReader()" aria-label="Open in Text Reader Window">
+          🔊 Open in Text Reader ➡
+        </button>
+        <button type="button" class="action-btn" onclick="copyImageText()" aria-label="Copy Scanned Text">
+          📋 Copy Text
+        </button>
+        <button type="button" class="action-btn btn-danger-look" onclick="clearImageText()" aria-label="Clear Scanned Text">
+          🗑 Clear
+        </button>
       </div>
     </section>
 
     <!-- ========================================================================= -->
     <!-- DEDICATED WINDOW 3: TEXT READER & SPEECH CONTROLS                         -->
     <!-- ========================================================================= -->
-    <section id="window-reader" class="hidden" aria-labelledby="reader-heading">
-      <button type="button" class="btn btn-back" onclick="goBackToHub()" aria-label="Back to Main Menu">
-        ⬅ Back to Main Menu
+    <section id="view-reader" style="display: none;" aria-labelledby="reader-title">
+      <button type="button" class="back-btn" onclick="showView('view-hub')" aria-label="Back to Main Menu">
+        <span>⬅ Back to Main Menu</span>
       </button>
 
-      <div class="card">
-        <h2 id="reader-heading" class="card-title">
-          <span>🔊</span> Text Reader & Speech Controls
-        </h2>
+      <h2 id="reader-title" style="margin-top: 0; font-size: 1.8rem;">🔊 Text Reader & Speech Controls</h2>
 
-        <!-- Playback Controls -->
-        <div class="button-group" role="toolbar" aria-label="Speech playback controls">
-          <button id="btn-speech-play" class="btn btn-primary" onclick="handlePlaySpeech()" aria-label="Read Text Aloud">
-            ▶ Read Aloud
-          </button>
-          <button id="btn-spee
+      <div class="btn-row">
+        <button type="button" class="action-btn btn-primary-look" onclick="startSpeech()" aria-label="Read Text Aloud">
+          ▶ Read Aloud
+        </button>
+        <button type="button" class="action-btn" onclick="pauseOrResumeSpeech()" aria-label="Pause or Resume Speech">
+          ⏸ Pause / Resume
+        </button>
+        <button type="button" class="action-btn btn-danger-look" onclick="stopSpeech()" aria-label="Stop Reading Immediately">
+          ⏹ Stop
+        </button>
+        <button type="button" class="action-btn" onclick="copyMainText()" aria-label="Copy Text to Clipboard">
+          📋 Copy
+        </button>
+        <button type="button" class="action-btn" onclick="clearMainText()" aria-label="Clear Text">
+          🗑 Clear
+        </button>
+      </div>
+
+      <textarea id="main-textarea" class="reader-textarea" placeholder="Enter text to read aloud..." aria-label="Text to read aloud" oninput="syncMainText()">Welcome to Accessible Reader.
+Developed by Saifulla.
+
+This application is ready to read documents and photos aloud for you.
+
+1. Tap PDF Reader to open and extract PDF files.
+2. Tap Image Scan to scan printed medicine labels or documents.
+3. Tap Text Reader to adjust speed and listen anytime.</textarea>
+
+      <!-- Sliders: Speed, Pitch, Voice -->
+      <div class="settings-grid">
+        <div class="setting-item">
+          <label for="slider-speed">Speed: <span id="val-speed">1.0x</span></label>
+          <input type="range" id="slider-speed" min="0.5" max="2.2" step="0.1" value="1.0" oninput="changeSpeed(this.value)" aria-label="Speech speed">
+        </div>
+
+        <div class="setting-item">
+          <label for="slider-pitch">Pitch: <span id="val-pitch">1.0</span></label>
+          <input type="range" id="slider-pitch" min="0.6" max="1.4" step="0.1" value="1.0" oninput="changePitch(this.value)" aria-label="Speech pitch">
+        </div>
+
+        <div class="setting-item">
+          <label for="select-voice">Voice:</label>
+          <select id="select-voice" onchange="changeVoice(this.value)" aria-label="Select speech voice">
+            <option value="">Default System Voice</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- DEDICATED WINDOW 4: EXIT CONFIRMATION                                     -->
+    <!-- ========================================================================= -->
+    <section id="view-exit" style="display: none;" aria-labelledby="exit-title">
+      <h2 id="exit-title" style="margin-top: 0; font-size: 1.8rem; color: #ef4444;">🚪 Exit Application?</h2>
+      <p style="font-size: 1.25rem; margin: 18px 0;">Do you really want to exit Accessible Reader?</p>
+
+      <div class="btn-row">
+        <button type="button" class="action-btn" style="min-width: 140px;" onclick="showView('view-hub')" aria-label="Cancel and Stay in App">
+          Cancel (Stay)
+        </button>
+        <button type="button" class="action-btn btn-danger-look" style="min-width: 140px;" onclick="confirmExit()" aria-label="Confirm Exit Application">
+          Exit Application
+        </button>
+      </div>
+    </section>
+
+    <!-- Farewell / Restart Screen -->
+    <section id="view-farewell" style="display: none; text-align: center; padding: 40px 10px;">
+      <h2 style="font-size: 2rem; color: #10b981;">Application Closed</h2>
+      <p style="font-size: 1.25rem;">Thank you for using Accessible Reader.<br>Developed by Saifulla.</p>
+      <button type="button" class="action-btn btn-primary-look" style="margin-top: 20px; font-size: 1.3rem;" onclick="restartApp()" aria-label="Restart Application">
+        🔄 Restart Application
+      </button>
+    </section>
+
+  </div>
+
+  <script>
+    /* =========================================================================
+       AUDIO SYNTHESIZER: REAL SOUND FEEDBACK (WEB AUDIO API)
+       100% Offline, Original & Instant
+       ========================================================================= */
+    const Sound = {
+      ctx: null,
+      getCtx() {
+        if (!this.ctx) {
+          const AudioClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioClass) this.ctx = new AudioClass();
+        }
+        if (this.ctx && this.ctx.state === "suspended") {
+          this.ctx.resume();
+        }
+        return this.ctx;
+      },
+      playTone(freq, duration = 0.15, gainVal = 0.2, type = "sine") {
+        try {
+          const ctx = this.getCtx();
+          if (!ctx) return;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = type;
+          osc
