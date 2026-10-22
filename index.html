@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -241,7 +240,7 @@
       </div>
 
       <!-- Guaranteed Non-Freezing "Next ▶" Transition Button -->
-      <button id="btn-splash-next" onclick="enterMainHub()" class="w-full py-4 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-2xl tracking-wide shadow-xl flex items-center justify-center gap-3 transition-transform cursor-pointer border-2 border-amber-300" aria-label="Enter Accessible Reader Main Hub">
+      <button id="btn-splash-next" class="w-full py-4 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-2xl tracking-wide shadow-xl flex items-center justify-center gap-3 transition-transform cursor-pointer border-2 border-amber-300" aria-label="Enter Accessible Reader Main Hub">
         <span>Next ▶</span>
         <span class="text-base font-bold bg-slate-950/20 px-3 py-1 rounded-full text-slate-900">Enter Hub</span>
       </button>
@@ -250,26 +249,23 @@
   </section>
 
   <!-- ========================================== -->
-  <!-- 2. MAIN HUB & TABS NAVIGATION              -->
+  <!-- 2. MAIN HUB                                -->
   <!-- ========================================== -->
   <main id="main-hub" class="hidden flex-1 flex flex-col p-4 md:p-6 max-w-5xl mx-auto w-full">
     <!-- Hub Sticky Header Bar -->
-    <header class="panel-bg bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
+    <header class="panel-bg bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6 shadow-lg flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-xl bg-amber-500 flex items-center justify-center text-slate-950 font-black text-2xl shadow">
           📖
         </div>
         <div>
           <h2 class="text-xl md:text-2xl font-black text-white leading-tight">Accessible Reader</h2>
-          <div class="text-xs text-amber-400 font-medium">Main Hub & Navigation • Saifulla</div>
+          <div class="text-xs text-amber-400 font-medium">Main Navigation Hub • Saifulla</div>
         </div>
       </div>
 
-      <!-- Right Actions: GitHub Code Copy, Theme, Font, Sound & Settings -->
+      <!-- Right Actions: Live Hub Clock & Accessibility Controls -->
       <div class="flex items-center gap-2 flex-wrap">
-        <button id="btn-quick-copy-github" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow" title="Copy clean index.html to paste straight into GitHub">
-          <span>📋 Copy Code for GitHub</span>
-        </button>
         <div id="hub-clock-pill" class="hidden sm:block text-xs font-mono font-bold px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-amber-300">
           --:--:--
         </div>
@@ -288,25 +284,6 @@
       </div>
     </header>
 
-    <!-- Quick Tool Tabs Bar (Instant Navigation) -->
-    <nav class="flex gap-2 mb-6 overflow-x-auto pb-1" aria-label="Core Feature Tabs">
-      <button onclick="openWindow('window-reader')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-amber-500/20 border border-slate-700 hover:border-amber-400 text-slate-200 hover:text-amber-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
-        <span>📄 Reader & Editor</span>
-      </button>
-      <button onclick="openWindow('window-ai')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-cyan-500/20 border border-slate-700 hover:border-cyan-400 text-slate-200 hover:text-cyan-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
-        <span>🤖 AI Assistant</span>
-      </button>
-      <button onclick="openWindow('window-compass')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-emerald-500/20 border border-slate-700 hover:border-emerald-400 text-slate-200 hover:text-emerald-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
-        <span>🧭 Sensors & Compass</span>
-      </button>
-      <button onclick="openWindow('window-calculator')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-purple-500/20 border border-slate-700 hover:border-purple-400 text-slate-200 hover:text-purple-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
-        <span>🔢 Talking Calculator</span>
-      </button>
-      <button onclick="openWindow('window-reminders')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-rose-500/20 border border-slate-700 hover:border-rose-400 text-slate-200 hover:text-rose-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
-        <span>⏰ Daily Reminders</span>
-      </button>
-    </nav>
-
     <!-- Welcome / Status Card -->
     <div class="panel-bg bg-gradient-to-r from-slate-900 to-slate-850 border border-slate-800 rounded-2xl p-4 mb-6 flex items-center justify-between">
       <div class="flex items-center gap-3">
@@ -324,19 +301,19 @@
     <!-- Core Feature Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 flex-1">
       
-      <!-- Card 1: Reader & Text Editor -->
+      <!-- Card 1: Reader & OCR -->
       <button id="card-reader" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-amber-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
         <div>
           <div class="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-3xl mb-4 text-amber-400 group-hover:scale-110 transition-transform">
             📄
           </div>
-          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-amber-400">Reader & Text Editor</h3>
+          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-amber-400">Reader & OCR</h3>
           <p class="text-slate-300 text-sm leading-relaxed mb-4">
-            Read documents aloud, edit text in-place, capture photos for OCR text extraction, and adjust speech rates.
+            Open documents, capture photos with camera for OCR text extraction, and read aloud with speed controls.
           </p>
         </div>
         <div class="flex items-center justify-between text-xs font-semibold text-amber-400 pt-3 border-t border-slate-800">
-          <span>TTS, In-Place Editor & OCR</span>
+          <span>TTS & Document Scanner</span>
           <span class="text-lg">▶</span>
         </div>
       </button>
@@ -403,4 +380,44 @@
             Accessible agenda and task checklist with "Read All Reminders Aloud" and synthesized audio chime alerts.
           </p>
         </div>
-        <div class="flex it
+        <div class="flex items-center justify-between text-xs font-semibold text-rose-400 pt-3 border-t border-slate-800">
+          <span>Voice Agenda & Local Storage</span>
+          <span class="text-lg">▶</span>
+        </div>
+      </button>
+
+      <!-- Card 6: Settings & OTA Export -->
+      <button id="card-settings" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-amber-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-3xl mb-4 text-amber-400 group-hover:scale-110 transition-transform">
+            ⚙
+          </div>
+          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-amber-400">Settings & OTA Export</h3>
+          <p class="text-slate-300 text-sm leading-relaxed mb-4">
+            Download self-contained index.html source, configure speech fallback engines, and manage data.
+          </p>
+        </div>
+        <div class="flex items-center justify-between text-xs font-semibold text-amber-400 pt-3 border-t border-slate-800">
+          <span>Single-File Code & Fallback</span>
+          <span class="text-lg">▶</span>
+        </div>
+      </button>
+
+    </div>
+
+    <!-- Footer Credit -->
+    <footer class="mt-8 text-center text-xs text-slate-400 py-3 border-t border-slate-800 flex flex-wrap justify-between items-center gap-2">
+      <div>Accessible Reader • Android Web-App & GitHub Pages Project</div>
+      <div class="font-bold text-amber-400">Developed by Saifulla</div>
+    </footer>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- 3. DEDICATED TOOL WINDOWS (OVERLAYS)        -->
+  <!-- ========================================== -->
+  <div id="windows-container">
+
+    <!-- ---------------------------------------- -->
+    <!-- WINDOW 1: READER & OCR                   -->
+    <!-- ---------------------------------------- -->
+    <div id="window-reader" class="tool-window fixed inset-0 z-50 bg-slate-950 p-4 md:p-6 hidden flex flex-col over
