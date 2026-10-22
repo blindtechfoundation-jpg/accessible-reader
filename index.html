@@ -6,8 +6,8 @@
   <title>Accessible Reader</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <!-- Tesseract.js CDN for Client-Side OCR -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <!-- Tesseract.js CDN for Client-Side OCR (Deferred so it never blocks page load) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
     /* Accessibility Base & Transitions */
@@ -21,6 +21,11 @@
       transition: background-color 0.25s ease, color 0.25s ease;
       min-height: 100vh;
     }
+
+    /* Offline & Core Layout Fallbacks */
+    .hidden { display: none !important; }
+    .flex { display: flex !important; }
+    .block { display: block !important; }
 
     /* High Contrast Themes */
     .theme-dark {
@@ -207,13 +212,13 @@
         <!-- Live System Date -->
         <div>
           <div class="text-xs uppercase tracking-widest text-slate-400 font-semibold mb-1">Live System Date</div>
-          <div id="splash-date" class="text-xl md:text-2xl font-bold text-slate-100 py-1">Loading Date...</div>
+          <div id="splash-date" class="text-xl md:text-2xl font-bold text-slate-100 py-1">Thursday, October 22, 2026</div>
         </div>
 
         <!-- Live System Time -->
         <div class="bg-slate-950/70 rounded-xl p-4 border border-slate-800">
           <div class="text-xs uppercase tracking-widest text-amber-400 font-semibold mb-1">Live System Time</div>
-          <div id="splash-time" class="text-3xl md:text-4xl font-mono font-black text-amber-400 tracking-wider">--:--:-- --</div>
+          <div id="splash-time" class="text-3xl md:text-4xl font-mono font-black text-amber-400 tracking-wider">11:35:00 AM</div>
         </div>
 
         <!-- Developer Credit (Prominently displayed) -->
@@ -226,15 +231,15 @@
 
     <!-- Bottom Controls & Guaranteed Non-Freezing Next Button -->
     <div class="w-full max-w-md space-y-4 mb-4">
-      <!-- Quick Accessibility Bar on Splash -->
+      <!-- Quick Accessibility Bar on Splash with direct inline onclick handlers -->
       <div class="flex items-center justify-around gap-2 p-2 bg-slate-900/80 rounded-xl border border-slate-800 text-xs text-slate-300">
-        <button id="splash-btn-contrast" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 font-medium">
+        <button id="splash-btn-contrast" onclick="cycleThemes()" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 font-medium">
           🎨 Toggle Contrast
         </button>
-        <button id="splash-btn-fontsize" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 font-medium">
+        <button id="splash-btn-fontsize" onclick="cycleFontSizes()" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 font-medium">
           🔍 Font Size
         </button>
-        <button id="splash-btn-voice" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 font-medium">
+        <button id="splash-btn-voice" onclick="testSpeech()" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 font-medium">
           🔊 Test Speech
         </button>
       </div>
@@ -246,6 +251,30 @@
       </button>
       <div class="text-xs text-slate-400">Tap Next or press Space / Enter on keyboard</div>
     </div>
+
+    <!-- Early Instant Clock & Transition Engine (Runs immediately on element render) -->
+    <script>
+      (function() {
+        function tickSplash() {
+          try {
+            var d = new Date();
+            var sd = document.getElementById('splash-date');
+            var st = document.getElementById('splash-time');
+            if (sd) sd.textContent = d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            if (st) st.textContent = d.toLocaleTimeString(undefined, { hour12: true });
+          } catch(e) {}
+        }
+        tickSplash();
+        setInterval(tickSplash, 1000);
+
+        window.enterMainHub = window.enterMainHub || function() {
+          var s = document.getElementById('splash-screen');
+          var h = document.getElementById('main-hub');
+          if (s) { s.style.display = 'none'; s.classList.add('hidden'); }
+          if (h) { h.classList.remove('hidden'); h.style.display = 'flex'; }
+        };
+      })();
+    </script>
   </section>
 
   <!-- ========================================== -->
@@ -266,22 +295,22 @@
 
       <!-- Right Actions: GitHub Code Copy, Theme, Font, Sound & Settings -->
       <div class="flex items-center gap-2 flex-wrap">
-        <button id="btn-quick-copy-github" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow" title="Copy clean index.html to paste straight into GitHub">
+        <button id="btn-quick-copy-github" onclick="copyAppCodeToClipboard()" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow" title="Copy clean index.html to paste straight into GitHub">
           <span>📋 Copy Code for GitHub</span>
         </button>
         <div id="hub-clock-pill" class="hidden sm:block text-xs font-mono font-bold px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-amber-300">
           --:--:--
         </div>
-        <button id="btn-toggle-theme" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-semibold text-slate-200" title="Switch Theme (Dark, Yellow, White, Light)">
+        <button id="btn-toggle-theme" onclick="cycleThemes()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-semibold text-slate-200" title="Switch Theme (Dark, Yellow, White, Light)">
           🎨 Theme
         </button>
-        <button id="btn-toggle-fontsize" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-semibold text-slate-200" title="Adjust Text Size">
+        <button id="btn-toggle-fontsize" onclick="cycleFontSizes()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-semibold text-slate-200" title="Adjust Text Size">
           🔍 Size
         </button>
-        <button id="btn-toggle-sound" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-semibold text-slate-200" title="Speech Voice Mute / Unmute">
+        <button id="btn-toggle-sound" onclick="toggleSoundMute()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-semibold text-slate-200" title="Speech Voice Mute / Unmute">
           🔊 Voice
         </button>
-        <button id="btn-open-settings" class="p-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500 text-sm font-bold text-amber-300" title="App Settings & Export">
+        <button id="btn-open-settings" onclick="openWindow('window-settings')" class="p-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500 text-sm font-bold text-amber-300" title="App Settings & Export">
           ⚙ Settings
         </button>
       </div>
@@ -315,7 +344,7 @@
           <p class="text-xs text-slate-400">Select any dedicated tool below. Press Android Back anytime to safely return here.</p>
         </div>
       </div>
-      <button id="btn-hub-read-status" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-semibold text-cyan-300">
+      <button id="btn-hub-read-status" onclick="speakHubStatus()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-semibold text-cyan-300">
         🔊 Speak Hub
       </button>
     </div>
@@ -324,7 +353,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 flex-1">
       
       <!-- Card 1: Reader & Text Editor -->
-      <button id="card-reader" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-amber-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+      <button id="card-reader" onclick="openWindow('window-reader')" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-amber-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
         <div>
           <div class="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-3xl mb-4 text-amber-400 group-hover:scale-110 transition-transform">
             📄
@@ -341,7 +370,7 @@
       </button>
 
       <!-- Card 2: AI Assistant -->
-      <button id="card-ai" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-cyan-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+      <button id="card-ai" onclick="openWindow('window-ai')" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-cyan-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
         <div>
           <div class="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-3xl mb-4 text-cyan-400 group-hover:scale-110 transition-transform">
             🤖
@@ -358,7 +387,7 @@
       </button>
 
       <!-- Card 3: Tactile Compass & Sensors -->
-      <button id="card-compass" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-emerald-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+      <button id="card-compass" onclick="openWindow('window-compass')" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-emerald-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
         <div>
           <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-3xl mb-4 text-emerald-400 group-hover:scale-110 transition-transform">
             🧭
@@ -375,31 +404,4 @@
       </button>
 
       <!-- Card 4: Talking Calculator -->
-      <button id="card-calculator" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-purple-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
-        <div>
-          <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-3xl mb-4 text-purple-400 group-hover:scale-110 transition-transform">
-            🔢
-          </div>
-          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-purple-400">Talking Calculator</h3>
-          <p class="text-slate-300 text-sm leading-relaxed mb-4">
-            High-contrast tactile keypad that speaks each digit pressed and reads full arithmetic calculations aloud.
-          </p>
-        </div>
-        <div class="flex items-center justify-between text-xs font-semibold text-purple-400 pt-3 border-t border-slate-800">
-          <span>Spoken Digits & History</span>
-          <span class="text-lg">▶</span>
-        </div>
-      </button>
-
-      <!-- Card 5: Daily Tools / Reminders -->
-      <button id="card-reminders" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-rose-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
-        <div>
-          <div class="w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-3xl mb-4 text-rose-400 group-hover:scale-110 transition-transform">
-            ⏰
-          </div>
-          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-rose-400">Daily Tools & Reminders</h3>
-          <p class="text-slate-300 text-sm leading-relaxed mb-4">
-            Accessible agenda and task checklist with "Read All Reminders Aloud" and synthesized audio chime alerts.
-          </p>
-        </div>
-        <div class="flex items-cent
+      <button id="card-calculator" onclick="openWindow('window-calculator')" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-purple-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scal
