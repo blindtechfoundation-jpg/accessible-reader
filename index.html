@@ -1,290 +1,735 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#102a43">
-<meta name="description" content="Accessible Reader: a self-contained accessible reading and daily tools app.">
-<title>Accessible Reader</title>
-<style>
-:root{color-scheme:dark;--bg:#071521;--panel:#102a43;--panel2:#163a56;--text:#f5f9ff;--muted:#c6d7e7;--accent:#ffd166;--focus:#7bdff2;--danger:#ff8c8c;--ok:#9be7b1}
-*{box-sizing:border-box}html{font-size:18px}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}
-button,input,textarea,select{font:inherit}button{cursor:pointer;min-height:48px;padding:.65rem 1rem;border:2px solid transparent;border-radius:.7rem;background:var(--accent);color:#152536;font-weight:750}
-button.secondary{background:var(--panel2);border-color:#6d91aa;color:var(--text)}button.danger{background:#5b2229;color:white;border-color:#ff9b9b}button:disabled{opacity:.55;cursor:not-allowed}
-:focus-visible{outline:4px solid var(--focus);outline-offset:3px}
-header{padding:1rem clamp(1rem,4vw,2.5rem);background:#0c2234;border-bottom:1px solid #33546c;display:flex;gap:1rem;align-items:center;justify-content:space-between;flex-wrap:wrap}
-h1,h2,h3{line-height:1.2}h1{font-size:clamp(1.6rem,4vw,2.3rem);margin:.2rem 0}h2{font-size:1.45rem}p{max-width:75ch}.muted{color:var(--muted)}.small{font-size:.9rem}
-main{width:min(1100px,100%);margin:auto;padding:clamp(1rem,4vw,2rem)}.screen[hidden],.panel[hidden]{display:none!important}
-.splash{min-height:75vh;display:grid;place-items:center;text-align:center}.splash-card{width:min(760px,100%);padding:clamp(1.3rem,5vw,3rem);background:var(--panel);border:1px solid #45657d;border-radius:1.25rem}
-.clock{font-size:1.2rem;font-variant-numeric:tabular-nums;margin:.5rem 0}.actions{display:flex;gap:.7rem;flex-wrap:wrap;margin:1rem 0}.actions>*{flex:0 1 auto}
-.nav{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 1.5rem}.nav button[aria-current="page"]{background:var(--focus);color:#102a43}
-.panel{background:var(--panel);border:1px solid #385a73;border-radius:1rem;padding:clamp(1rem,3vw,1.5rem);margin:1rem 0}
-label{display:block;font-weight:700;margin:.8rem 0 .3rem}input,textarea,select{width:100%;padding:.75rem;border:2px solid #7695aa;border-radius:.6rem;background:#061521;color:var(--text)}textarea{min-height:170px;resize:vertical}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:1rem}.tile{min-height:100px;text-align:left;font-size:1.08rem;background:var(--panel2);border:1px solid #7292aa;color:var(--text)}
-.status{padding:.7rem 1rem;border-radius:.6rem;background:#1c3b50;margin:.8rem 0}.status:empty{display:none}.status.error{border-left:5px solid var(--danger)}.status.good{border-left:5px solid var(--ok)}
-ul{padding-left:1.4rem}li{margin:.55rem 0}.task-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}.task-row span{flex:1;min-width:140px}.task-row button{min-height:42px}
-footer{border-top:1px solid #33546c;padding:1rem;text-align:center;color:var(--muted)}.number{font-variant-numeric:tabular-nums}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Accessible Reader - an accessible reading tool for blind and visually impaired users.">
+  <title>Accessible Reader - Developed by Saifulla</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #000000;
+      --foreground: #ffff00;
+      --border: #ffff00;
+      --button-background: #111111;
+      --focus: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--background);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      background: var(--background);
+      color: var(--foreground);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 19px;
+      line-height: 1.6;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      min-height: 64px;
+      padding: 14px 18px;
+      border: 3px solid var(--border);
+      border-radius: 12px;
+      background: var(--button-background);
+      color: var(--foreground);
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible,
+    a:focus-visible {
+      outline: 4px solid var(--focus);
+      outline-offset: 4px;
+    }
+
+    button:active {
+      background: #303000;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: #101010;
+      color: var(--foreground);
+    }
+
+    textarea {
+      min-height: 180px;
+      resize: vertical;
+    }
+
+    label {
+      display: block;
+      margin: 16px 0 8px;
+      font-weight: 700;
+    }
+
+    h1,
+    h2,
+    h3 {
+      color: var(--foreground);
+      line-height: 1.3;
+    }
+
+    h1 {
+      margin-bottom: 4px;
+      font-size: clamp(1.8rem, 6vw, 2.5rem);
+    }
+
+    h2 {
+      font-size: 1.7rem;
+    }
+
+    .credit {
+      margin-top: 0;
+      font-weight: 800;
+    }
+
+    .main-menu {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-top: 30px;
+    }
+
+    .menu-button {
+      min-height: 100px;
+      font-size: 1.3rem;
+      text-align: left;
+    }
+
+    .menu-button .emoji {
+      display: inline-block;
+      margin-right: 12px;
+      font-size: 1.8rem;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .back-button {
+      width: 100%;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .action-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .action-button {
+      width: 100%;
+    }
+
+    .file-input {
+      display: block;
+      margin-bottom: 20px;
+    }
+
+    .help,
+    .status {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .status:empty {
+      display: none;
+    }
+
+    .reader-output {
+      min-height: 100px;
+      margin-top: 20px;
+      padding: 14px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .preview-image {
+      display: block;
+      max-width: 100%;
+      max-height: 55vh;
+      margin: 16px auto;
+      border: 2px solid var(--border);
+      object-fit: contain;
+    }
+
+    .pdf-frame {
+      display: block;
+      width: 100%;
+      height: 60vh;
+      margin-top: 16px;
+      border: 2px solid var(--border);
+      background: #ffffff;
+    }
+
+    .exit-area {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid var(--border);
+    }
+
+    .exit-button {
+      width: 100%;
+      border-color: #ffffff;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (min-width: 700px) {
+      body {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 28px;
+      }
+
+      .main-menu {
+        grid-template-columns: 1fr;
+      }
+
+      .action-list.two-columns {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<header>
-  <div><h1>Accessible Reader</h1><div class="muted small">Reading, assistance and daily tools</div></div>
-  <div id="headerClock" class="clock" aria-label="Current date and time"></div>
-</header>
-<main>
-  <section id="welcome" class="screen splash" aria-labelledby="welcomeTitle">
-    <div class="splash-card">
-      <p aria-hidden="true" style="font-size:3rem;margin:0">📖</p>
-      <h2 id="welcomeTitle">Welcome to Accessible Reader</h2>
-      <p>Simple, accessible tools to read, calculate and organize your day.</p>
-      <p id="splashDate" class="clock"></p><p id="splashTime" class="clock"></p>
-      <p><strong>Developed by Saifulla</strong></p>
-      <div class="actions" style="justify-content:center"><button id="nextBtn" type="button">Next ▶</button></div>
-      <p class="muted small">Select Next to open the main menu. This transition does not depend on network or speech features.</p>
-    </div>
-  </section>
+  <header id="mainHeader">
+    <h1>Accessible Reader</h1>
+    <p class="credit">Developed by Saifulla</p>
+    <p>Simple reading tools designed with accessibility in mind.</p>
+  </header>
 
-  <section id="app" class="screen" hidden aria-label="Application">
-    <nav class="nav" aria-label="Main navigation">
-      <button type="button" data-tab="hub" aria-current="page">Main Hub</button>
-      <button type="button" data-tab="reader">Reader</button>
-      <button type="button" data-tab="assistant">AI Assistant</button>
-      <button type="button" data-tab="sensors">Sensors</button>
-      <button type="button" data-tab="calculator">Talking Calculator</button>
-      <button type="button" data-tab="daily">Daily Tools / Reminders</button>
-    </nav>
-    <div id="globalStatus" class="status" role="status" aria-live="polite"></div>
+  <main>
+    <!-- MAIN MENU -->
+    <section id="home" class="screen active" aria-labelledby="homeHeading">
+      <h2 id="homeHeading" tabindex="-1">Main Menu</h2>
 
-    <section id="panel-hub" class="panel" aria-labelledby="hubTitle">
-      <h2 id="hubTitle">Main Hub</h2><p>Choose a tool. All core tools are available without an account.</p>
-      <div class="grid">
-        <button class="tile" data-go="reader">📖 Reader <span class="small" style="display:block">Edit text and read it aloud</span></button>
-        <button class="tile" data-go="assistant">💡 AI Assistant <span class="small" style="display:block">Offline text helper</span></button>
-        <button class="tile" data-go="sensors">🧭 Sensors <span class="small" style="display:block">Check supported device sensors</span></button>
-        <button class="tile" data-go="calculator">🧮 Talking Calculator <span class="small" style="display:block">Calculate and speak the result</span></button>
-        <button class="tile" data-go="daily">🗓️ Daily Tools / Reminders <span class="small" style="display:block">Save tasks on this device</span></button>
+      <nav class="main-menu" aria-label="Main menu">
+        <button class="menu-button" type="button" data-open="pdfScreen">
+          <span class="emoji" aria-hidden="true">📄</span>
+          PDF Reader
+        </button>
+
+        <button class="menu-button" type="button" data-open="imageScreen">
+          <span class="emoji" aria-hidden="true">📷</span>
+          Image Scan
+        </button>
+
+        <button class="menu-button" type="button" data-open="textScreen">
+          <span class="emoji" aria-hidden="true">🔊</span>
+          Text Reader
+        </button>
+      </nav>
+
+      <div class="exit-area">
+        <button id="exitButton" class="exit-button" type="button">
+          🚪 Exit Application
+        </button>
       </div>
-      <p class="muted small">Privacy: text and reminders stay in this browser unless you choose to share them. Local storage can be cleared by browser settings.</p>
     </section>
 
-    <section id="panel-reader" class="panel" hidden aria-labelledby="readerTitle">
-      <h2 id="readerTitle">Reader</h2>
-      <label for="readerText">Text to read or edit</label>
-      <textarea id="readerText" placeholder="Type or paste text here…"></textarea>
-      <div class="actions">
-        <button id="speakBtn">▶ Read aloud</button><button id="pauseBtn" class="secondary">⏸ Pause / Resume</button><button id="stopBtn" class="secondary">■ Stop speech</button>
-        <button id="saveTextBtn" class="secondary">Save text</button><button id="clearTextBtn" class="secondary">Clear text</button>
+    <!-- PDF READER -->
+    <section id="pdfScreen" class="screen" aria-labelledby="pdfHeading" aria-hidden="true">
+      <button class="back-button" type="button" data-home>
+        ⬅ Back to Main Menu
+      </button>
+
+      <h2 id="pdfHeading" tabindex="-1">PDF Reader</h2>
+
+      <p class="help">
+        Choose a PDF file from your device. Your browser may display the
+        document below. PDF reading and text accessibility depend on your
+        browser and whether the PDF contains selectable text.
+      </p>
+
+      <label for="pdfFile">Choose a PDF document</label>
+      <input class="file-input" id="pdfFile" type="file" accept=".pdf,application/pdf">
+
+      <div id="pdfStatus" class="status" role="status" aria-live="polite"></div>
+
+      <div id="pdfResult"></div>
+
+      <div class="action-list">
+        <button id="openPdfButton" class="action-button" type="button" disabled>
+          Open PDF in New Tab
+        </button>
+        <button id="clearPdfButton" class="action-button" type="button">
+          Clear PDF
+        </button>
       </div>
-      <label for="voiceSelect">Voice (if supported)</label><select id="voiceSelect"><option value="">System default voice</option></select>
-      <div class="grid">
-        <div><label for="rate">Speech speed</label><input id="rate" type="range" min=".6" max="1.5" step=".1" value="1"><p class="muted small">Current: <span id="rateValue">1.0</span>×</p></div>
-        <div><label for="pitch">Speech pitch</label><input id="pitch" type="range" min=".7" max="1.4" step=".1" value="1"><p class="muted small">Current: <span id="pitchValue">1.0</span></p></div>
+    </section>
+
+    <!-- IMAGE SCAN -->
+    <section id="imageScreen" class="screen" aria-labelledby="imageHeading" aria-hidden="true">
+      <button class="back-button" type="button" data-home>
+        ⬅ Back to Main Menu
+      </button>
+
+      <h2 id="imageHeading" tabindex="-1">Image Scan</h2>
+
+      <p class="help">
+        Select or take a photo of a page. If your browser supports built-in
+        text recognition, you can try to extract the text. Otherwise, use
+        your device's accessibility or OCR feature and paste the recognized
+        text into Text Reader.
+      </p>
+
+      <label for="imageFile">Choose or take a picture</label>
+      <input
+        class="file-input"
+        id="imageFile"
+        type="file"
+        accept="image/*"
+        capture="environment"
+      >
+
+      <div id="imageStatus" class="status" role="status" aria-live="polite"></div>
+
+      <img id="imagePreview" class="preview-image" alt="Selected image preview" hidden>
+
+      <div class="action-list">
+        <button id="recognizeButton" class="action-button" type="button" disabled>
+          Try to Recognize Text
+        </button>
+        <button id="sendImageTextButton" class="action-button" type="button" disabled>
+          Send Recognized Text to Text Reader
+        </button>
+        <button id="clearImageButton" class="action-button" type="button">
+          Clear Image
+        </button>
       </div>
-      <p id="speechStatus" class="status" role="status" aria-live="polite"></p>
-      <p class="muted small">Speech depends on your browser or webview's speech engine. Some mobile browsers require a user tap before speech can start.</p>
+
+      <label for="recognizedText">Recognized text (editable)</label>
+      <textarea
+        id="recognizedText"
+        placeholder="Recognized text will appear here, or you can type or paste text."
+        spellcheck="true"
+      ></textarea>
+
+      <p id="ocrHelp" class="help">
+        Text recognition is not available in every browser. This single-file
+        application does not download an OCR engine or send your image to an
+        external service.
+      </p>
     </section>
 
-    <section id="panel-assistant" class="panel" hidden aria-labelledby="assistantTitle">
-      <h2 id="assistantTitle">AI Assistant</h2>
-      <p>This self-contained build provides local text tools. It does not pretend to call a remote AI model; online generative answers require a configured provider/backend.</p>
-      <label for="question">What would you like help with?</label><textarea id="question" placeholder="Paste text to summarize, or ask for a basic word count…"></textarea>
-      <div class="actions"><button id="summarizeBtn">Create short summary</button><button id="countBtn" class="secondary">Count words and characters</button><button id="explainBtn" class="secondary">Read text aloud</button></div>
-      <div id="assistantOutput" class="status" role="status" aria-live="polite"></div>
+    <!-- TEXT READER -->
+    <section id="textScreen" class="screen" aria-labelledby="textHeading" aria-hidden="true">
+      <button class="back-button" type="button" data-home>
+        ⬅ Back to Main Menu
+      </button>
+
+      <h2 id="textHeading" tabindex="-1">Text Reader</h2>
+
+      <p class="help">
+        Type or paste text below, then use the reading controls. Speech
+        availability and voice choices depend on your device and browser.
+      </p>
+
+      <label for="readerText">Text to read</label>
+      <textarea
+        id="readerText"
+        placeholder="Type or paste your text here."
+        spellcheck="true"
+        autocomplete="off"
+      ></textarea>
+
+      <div class="action-list two-columns">
+        <button id="speakButton" class="action-button" type="button">
+          🔊 Read Text
+        </button>
+
+        <button id="pauseButton" class="action-button" type="button">
+          ⏸ Pause Reading
+        </button>
+
+        <button id="resumeButton" class="action-button" type="button">
+          ▶ Resume Reading
+        </button>
+
+        <button id="stopButton" class="action-button" type="button">
+          ⏹ Stop Reading
+        </button>
+
+        <button id="clearTextButton" class="action-button" type="button">
+          Clear Text
+        </button>
+
+        <button id="saveTextButton" class="action-button" type="button">
+          Save Text on This Device
+        </button>
+
+        <button id="loadTextButton" class="action-button" type="button">
+          Load Saved Text
+        </button>
+
+        <button id="downloadTextButton" class="action-button" type="button">
+          Download Text File
+        </button>
+      </div>
+
+      <label for="voiceSelect">Speech voice</label>
+      <select id="voiceSelect">
+        <option value="">Default device voice</option>
+      </select>
+
+      <label for="rateControl">Speaking speed</label>
+      <select id="rateControl">
+        <option value="0.7">Slow</option>
+        <option value="1" selected>Normal</option>
+        <option value="1.25">Fast</option>
+        <option value="1.5">Very fast</option>
+      </select>
+
+      <div id="readerStatus" class="status" role="status" aria-live="polite"></div>
     </section>
+  </main>
 
-    <section id="panel-sensors" class="panel" hidden aria-labelledby="sensorsTitle">
-      <h2 id="sensorsTitle">Sensors</h2>
-      <p>Browser sensor access varies by device, browser and permission policy. Unavailable sensors are reported rather than treated as fatal errors.</p>
-      <div class="actions"><button id="motionBtn">Check motion sensor</button><button id="locationBtn" class="secondary">Get location (permission required)</button><button id="stopSensorsBtn" class="secondary">Stop sensor listening</button></div>
-      <div id="sensorOutput" class="status" role="status" aria-live="polite">No sensor check has been run.</div>
-    </section>
+  <div id="globalStatus" class="visually-hidden" role="status" aria-live="polite"></div>
 
-    <section id="panel-calculator" class="panel" hidden aria-labelledby="calculatorTitle">
-      <h2 id="calculatorTitle">Talking Calculator</h2>
-      <label for="calcInput">Expression</label><input id="calcInput" inputmode="decimal" autocomplete="off" placeholder="Example: (12 + 8) / 4">
-      <div class="actions"><button id="calculateBtn">Calculate</button><button id="speakResultBtn" class="secondary">Speak result</button><button id="clearCalcBtn" class="secondary">Clear</button></div>
-      <div id="calcOutput" class="status" role="status" aria-live="polite">Enter an arithmetic expression.</div>
-      <p class="muted small">Supports numbers, parentheses and + − × ÷, remainder, and exponentiation. Expressions are parsed safely; JavaScript eval is not used.</p>
-    </section>
+  <script>
+    "use strict";
 
-    <section id="panel-daily" class="panel" hidden aria-labelledby="dailyTitle">
-      <h2 id="dailyTitle">Daily Tools / Reminders</h2>
-      <label for="taskText">Task or reminder</label><input id="taskText" maxlength="240" placeholder="e.g. Call the clinic">
-      <label for="taskDate">Reminder date and time (optional)</label><input id="taskDate" type="datetime-local">
-      <div class="actions"><button id="addTaskBtn">Add reminder</button><button id="exportTasksBtn" class="secondary">Export reminders</button><button id="clearTasksBtn" class="danger">Delete all reminders</button></div>
-      <p class="muted small">Reminders are stored on this device. Browser-only reminders cannot reliably notify you while the app is closed; use your device's reminder app for critical alerts.</p>
-      <h3>Saved reminders</h3><div id="taskList" aria-live="polite"></div>
-    </section>
-  </section>
-</main>
-<footer>Accessible Reader · Developed by Saifulla</footer>
-<script>
-(() => {
-  'use strict';
-  const $ = (id) => document.getElementById(id);
-  const safeStore = {
-    get(key, fallback) { try { const v = localStorage.getItem(key); return v === null ? fallback : v; } catch (_) { return fallback; } },
-    set(key, value) { try { localStorage.setItem(key, value); return true; } catch (_) { return false; } },
-    remove(key) { try { localStorage.removeItem(key); } catch (_) {} }
-  };
-  function announce(message, kind='') {
-    const node = $('globalStatus');
-    if (!node) return;
-    node.textContent = message;
-    node.className = 'status' + (kind ? ' ' + kind : '');
-  }
-  function updateClock() {
-    const now = new Date();
-    const date = now.toLocaleDateString(undefined, {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-    const time = now.toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-    $('headerClock').textContent = date + ' · ' + time;
-    $('splashDate').textContent = date;
-    $('splashTime').textContent = time;
-  }
-  updateClock();
-  window.setInterval(updateClock, 1000);
+    (function () {
+      const screens = Array.from(document.querySelectorAll(".screen"));
+      const homeScreen = document.getElementById("home");
+      const mainHeader = document.getElementById("mainHeader");
 
-  const tabNames = ['hub','reader','assistant','sensors','calculator','daily'];
-  function showTab(tab) {
-    if (!tabNames.includes(tab)) tab = 'hub';
-    tabNames.forEach(name => {
-      const panel = $('panel-' + name);
-      if (panel) panel.hidden = name !== tab;
-    });
-    document.querySelectorAll('[data-tab]').forEach(button => {
-      if (button.dataset.tab === tab) button.setAttribute('aria-current','page');
-      else button.removeAttribute('aria-current');
-    });
-    const heading = $('panel-' + tab)?.querySelector('h2');
-    if (heading) heading.setAttribute('tabindex','-1');
-    if (heading) heading.focus({preventScroll:true});
-    announce((heading?.textContent || 'Main Hub') + ' opened.');
-  }
-  $('nextBtn').addEventListener('click', () => {
-    $('welcome').hidden = true;
-    $('app').hidden = false;
-    showTab('hub');
-    const first = $('panel-hub').querySelector('h2');
-    if (first) first.focus();
-  });
-  document.querySelectorAll('[data-tab]').forEach(button => button.addEventListener('click', () => showTab(button.dataset.tab)));
-  document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => showTab(button.dataset.go)));
+      let currentPdfUrl = null;
+      let currentImageUrl = null;
+      let recognitionToken = 0;
+      let speechGeneration = 0;
 
-  // Reader and speech: all speech API access is feature-detected and exception-safe.
-  const readerText = $('readerText');
-  readerText.value = safeStore.get('ar.readerText', '');
-  let voices = [];
-  function speechAvailable() {
-    return 'speechSynthesis' in window && typeof window.SpeechSynthesisUtterance === 'function';
-  }
-  function loadVoices() {
-    const select = $('voiceSelect');
-    if (!speechAvailable()) { select.innerHTML = '<option value="">Speech is not supported</option>'; return; }
-    try {
-      voices = window.speechSynthesis.getVoices() || [];
-      const previous = select.value;
-      select.replaceChildren(new Option('System default voice',''));
-      voices.forEach((voice, i) => select.add(new Option(`${voice.name} (${voice.lang})`, String(i))));
-      if (previous && Number(previous) < voices.length) select.value = previous;
-    } catch (_) { /* Some embedded browsers expose an incomplete voices API. */ }
-  }
-  if (speechAvailable()) {
-    loadVoices();
-    try { window.speechSynthesis.addEventListener?.('voiceschanged', loadVoices); } catch (_) {}
-  } else loadVoices();
+      const pdfFile = document.getElementById("pdfFile");
+      const pdfStatus = document.getElementById("pdfStatus");
+      const pdfResult = document.getElementById("pdfResult");
+      const openPdfButton = document.getElementById("openPdfButton");
 
-  let speechRun = 0;
-  function speakText(text, statusNode=$('speechStatus')) {
-    const value = String(text || '').trim();
-    if (!value) { statusNode.textContent = 'Please enter some text first.'; statusNode.className='status error'; return false; }
-    if (!speechAvailable()) { statusNode.textContent = 'Speech synthesis is not available in this browser or webview. You can still read the text on screen.'; statusNode.className='status error'; return false; }
-    try {
-      const synth = window.speechSynthesis;
-      const run = ++speechRun;
-      synth.cancel();
-      // Short sequential chunks are more reliable than one very long utterance in some mobile engines.
-      const chunks = value.match(/[^\n]{1,900}(?:\s|$)|\n/g) || [value];
-      const voiceIndex = $('voiceSelect').value;
-      const voice = voiceIndex !== '' ? voices[Number(voiceIndex)] : null;
-      let index = 0;
-      function nextChunk() {
-        if (run !== speechRun) return;
-        if (index >= chunks.length) { statusNode.textContent='Finished reading.'; statusNode.className='status good'; return; }
-        const part = chunks[index++].trim();
-        if (!part) { nextChunk(); return; }
-        try {
-          const utterance = new SpeechSynthesisUtterance(part);
-          if (voice) utterance.voice = voice;
-          utterance.rate = Number($('rate').value) || 1;
-          utterance.pitch = Number($('pitch').value) || 1;
-          utterance.onstart = () => { if (run === speechRun) { statusNode.textContent='Reading aloud…'; statusNode.className='status'; } };
-          utterance.onend = () => { if (run === speechRun) nextChunk(); };
-          utterance.onerror = event => {
-            if (run !== speechRun) return;
-            statusNode.textContent = 'Speech could not continue' + (event && event.error ? ': ' + event.error : '.') + ' Try again or check device speech settings.';
-            statusNode.className='status error';
-          };
-          synth.speak(utterance);
-        } catch (error) {
-          if (run === speechRun) { statusNode.textContent='Speech is unavailable right now. ' + (error && error.message ? error.message : 'Please try again.'); statusNode.className='status error'; }
+      const imageFile = document.getElementById("imageFile");
+      const imagePreview = document.getElementById("imagePreview");
+      const imageStatus = document.getElementById("imageStatus");
+      const recognizedText = document.getElementById("recognizedText");
+      const recognizeButton = document.getElementById("recognizeButton");
+      const sendImageTextButton = document.getElementById("sendImageTextButton");
+
+      const readerText = document.getElementById("readerText");
+      const readerStatus = document.getElementById("readerStatus");
+      const voiceSelect = document.getElementById("voiceSelect");
+      const rateControl = document.getElementById("rateControl");
+
+      function announce(message) {
+        document.getElementById("globalStatus").textContent = message;
+      }
+
+      function showStatus(element, message) {
+        element.textContent = message;
+      }
+
+      function stopSpeech() {
+        speechGeneration++;
+
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
         }
       }
-      statusNode.textContent='Starting speech…'; statusNode.className='status'; nextChunk(); return true;
-    } catch (error) {
-      statusNode.textContent='Speech is unavailable right now. ' + (error && error.message ? error.message : 'Please try again.');
-      statusNode.className='status error'; return false;
-    }
-  }
-  $('speakBtn').addEventListener('click', () => speakText(readerText.value));
-  $('pauseBtn').addEventListener('click', () => {
-    if (!speechAvailable()) { $('speechStatus').textContent='Speech is not supported here.'; return; }
-    try {
-      const synth = window.speechSynthesis;
-      if (synth.speaking && !synth.paused) { synth.pause(); $('speechStatus').textContent='Speech paused.'; }
-      else if (synth.paused) { synth.resume(); $('speechStatus').textContent='Speech resumed.'; }
-      else $('speechStatus').textContent='No speech is currently playing.';
-    } catch (_) { $('speechStatus').textContent='Pause/resume is not supported by this speech engine.'; }
-  });
-  $('stopBtn').addEventListener('click', () => {
-    speechRun++;
-    try { if (speechAvailable()) window.speechSynthesis.cancel(); } catch (_) {}
-    $('speechStatus').textContent='Speech stopped.';
-  });
-  $('saveTextBtn').addEventListener('click', () => {
-    const saved = safeStore.set('ar.readerText', readerText.value);
-    announce(saved ? 'Text saved on this device.' : 'Could not save text. Browser storage may be disabled or full.', saved ? 'good' : 'error');
-  });
-  $('clearTextBtn').addEventListener('click', () => { readerText.value=''; safeStore.remove('ar.readerText'); $('speechStatus').textContent='Text cleared.'; });
-  $('rate').addEventListener('input', () => $('rateValue').textContent=Number($('rate').value).toFixed(1));
-  $('pitch').addEventListener('input', () => $('pitchValue').textContent=Number($('pitch').value).toFixed(1));
 
-  // Local assistant helpers, not a remote generative AI service.
-  $('summarizeBtn').addEventListener('click', () => {
-    const text = $('question').value.trim();
-    if (!text) { $('assistantOutput').textContent='Enter or paste some text first.'; return; }
-    const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
-    const summary = sentences.map(s=>s.trim()).filter(Boolean).slice(0,3).join(' ');
-    $('assistantOutput').textContent = 'Short extractive summary: ' + summary;
-  });
-  $('countBtn').addEventListener('click', () => {
-    const text=$('question').value.trim();
-    const words=text ? (text.match(/\S+/g)||[]).length : 0;
-    $('assistantOutput').textContent=`Word count: ${words}. Character count: ${$('question').value.length}.`;
-  });
-  $('explainBtn').addEventListener('click', () => speakText($('question').value, $('assistantOutput')));
+      function showScreen(screenId) {
+        const target = document.getElementById(screenId);
+        if (!target) return;
 
-  // Sensor checks are event-driven; no busy loops or polling.
-  let motionHandler = null;
-  $('motionBtn').addEventListener('click', async () => {
-    const out=$('sensorOutput');
-    try {
-      if (typeof DeviceMotionEvent === 'undefined') { out.textContent='Motion sensor API is not supported by this browser/device.'; return; }
-      if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        const permission = await DeviceMotionEvent.requestPermission();
-        if (permission !== 'granted') { out.textContent='Motion sensor permission was not granted.'; return; }
+        stopSpeech();
+
+        screens.forEach(function (screen) {
+          const isActive = screen === target;
+          screen.classList.toggle("active", isActive);
+          screen.setAttribute("aria-hidden", String(!isActive));
+        });
+
+        mainHeader.hidden = screenId !== "home";
+
+        const heading = target.querySelector("h2");
+        if (heading) {
+          heading.focus();
+        }
+
+        window.scrollTo({ top: 0, behavior: "auto" });
       }
-      if (motionHandler) window.removeEventListener('devicemotion', motionHandler);
-      motionHandler = event => {
-        const a=event.accelerationIncludingGravity;
-        out.textContent = a ? `Motion sensor active. X: ${fmt(a.x)}, Y: ${fmt(a.y
+
+      document.querySelectorAll("[data-open]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          showScreen(button.dataset.open);
+        });
+      });
+
+      document.querySelectorAll("[data-home]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          showScreen("home");
+        });
+      });
+
+      // EXIT: a website cannot reliably close its own tab.
+      document.getElementById("exitButton").addEventListener("click", function () {
+        const confirmed = window.confirm(
+          "Do you want to leave Accessible Reader? Unsaved text may be lost."
+        );
+
+        if (confirmed) {
+          stopSpeech();
+          announce(
+            "To exit Accessible Reader, close this browser tab or window."
+          );
+          window.alert(
+            "To exit Accessible Reader, close this browser tab or window."
+          );
+        }
+      });
+
+      // PDF READER
+      pdfFile.addEventListener("change", function () {
+        const file = pdfFile.files && pdfFile.files[0];
+
+        pdfResult.replaceChildren();
+        openPdfButton.disabled = true;
+
+        if (currentPdfUrl) {
+          URL.revokeObjectURL(currentPdfUrl);
+          currentPdfUrl = null;
+        }
+
+        if (!file) {
+          showStatus(pdfStatus, "No PDF selected.");
+          return;
+        }
+
+        const isPdf = file.type === "application/pdf" ||
+          file.name.toLowerCase().endsWith(".pdf");
+
+        if (!isPdf) {
+          showStatus(pdfStatus, "Please choose a PDF file.");
+          pdfFile.value = "";
+          return;
+        }
+
+        currentPdfUrl = URL.createObjectURL(file);
+
+        const frame = document.createElement("iframe");
+        frame.className = "pdf-frame";
+        frame.title = "Selected PDF document";
+        frame.src = currentPdfUrl;
+
+        const fallback = document.createElement("p");
+        fallback.textContent =
+          "If the document does not appear, use the Open PDF in New Tab button.";
+
+        pdfResult.append(frame, fallback);
+        openPdfButton.disabled = false;
+
+        showStatus(
+          pdfStatus,
+          "PDF loaded. Your browser controls how the document is displayed and read."
+        );
+      });
+
+      openPdfButton.addEventListener("click", function () {
+        if (!currentPdfUrl) return;
+
+        const opened = window.open(currentPdfUrl, "_blank", "noopener");
+
+        if (!opened) {
+          showStatus(
+            pdfStatus,
+            "The browser blocked the new tab. Allow pop-ups or use the embedded document."
+          );
+        }
+      });
+
+      document.getElementById("clearPdfButton").addEventListener("click", function () {
+        pdfFile.value = "";
+        pdfResult.replaceChildren();
+        openPdfButton.disabled = true;
+
+        if (currentPdfUrl) {
+          URL.revokeObjectURL(currentPdfUrl);
+          currentPdfUrl = null;
+        }
+
+        showStatus(pdfStatus, "PDF cleared.");
+      });
+
+      // IMAGE PREVIEW
+      imageFile.addEventListener("change", function () {
+        const file = imageFile.files && imageFile.files[0];
+
+        if (currentImageUrl) {
+          URL.revokeObjectURL(currentImageUrl);
+          currentImageUrl = null;
+        }
+
+        imagePreview.removeAttribute("src");
+        imagePreview.hidden = true;
+        recognizeButton.disabled = true;
+        sendImageTextButton.disabled = true;
+        recognizedText.value = "";
+
+        const token = ++recognitionToken;
+
+        if (!file) {
+          showStatus(imageStatus, "No image selected.");
+          return;
+        }
+
+        if (!file.type.startsWith("image/")) {
+          imageFile.value = "";
+          showStatus(imageStatus, "Please choose an image file.");
+          return;
+        }
+
+        currentImageUrl = URL.createObjectURL(file);
+        imagePreview.src = currentImageUrl;
+        imagePreview.alt = "Selected image: " + file.name;
+        imagePreview.hidden = false;
+        recognizeButton.disabled = false;
+
+        showStatus(
+          imageStatus,
+          "Image loaded. You can try text recognition if your browser supports it."
+        );
+
+        // Prevent an obsolete recognition result from being used after a new image.
+        imagePreview.dataset.token = String(token);
+      });
+
+      recognizeButton.addEventListener("click", async function () {
+        if (!currentImageUrl || !imagePreview.complete) {
+          showStatus(imageStatus, "Please select an image first.");
+          return;
+        }
+
+        const TextDetectorConstructor = window.TextDetector;
+
+        if (typeof TextDetectorConstructor !== "function") {
+          showStatus(
+            imageStatus,
+            "Built-in text recognition is not supported in this browser. Use your device's OCR feature or enter the text manually."
+          );
+          return;
+        }
+
+        const token = recognitionToken;
+        recognizeButton.disabled = true;
+        showStatus(imageStatus, "Attempting to recognize text. Please wait.");
+
+        try {
+          const detector = new TextDetectorConstructor();
+          const results = await detector.detect(imagePreview);
+
+          if (token !== recognitionToken) return;
+
+          const lines = results
+            .map(function (item) {
+              return item.rawValue || "";
+            })
+            .filter(Boolean);
+
+          if (lines.length === 0) {
+            showStatus(
+              imageStatus,
+              "No text was detected. Try a clearer image or enter the text manually."
+            );
+            return;
+          }
+
+          recognizedText.value = lines.join("\n");
+          sendImageTextButton.disabled = false;
+
+          showStatus(
+            imageStatus,
+            "Text recognized. Review the result for mistakes before reading it."
+          );
+        } catch (error) {
+          if (token !== recognitionToken) return;
+
+          showStatus(
+            imageStatus,
+            "Text recognition failed or is unavailable. Try another image or enter the text manually."
+          );
+        } finally {
+          if (token === recognitionToken) {
+            recognizeButton.disabled = false;
+          }
+        }
+      });
+
+      recognizedText.addEventListener("input", function () {
+        sendImageTextButton.disabled = recognizedText.value.trim().length === 0;
+      });
+
+      sendImageTextButton.addEventListener("click", function () {
+        const text = recognizedText.value.trim();
+
+        if (!text) {
+          showStatus(imageStatus, "There is no text to send.");
+     
