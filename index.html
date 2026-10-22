@@ -67,6 +67,7 @@
     .theme-yellow .card,
     .theme-yellow .input-box,
     .theme-yellow button,
+    .theme-yellow label.btn,
     .theme-yellow select {
       background-color: #000000 !important;
       color: #ffff00 !important;
@@ -98,6 +99,7 @@
       border: 2px solid #000000 !important;
     }
     .theme-white button,
+    .theme-white label.btn,
     .theme-white select {
       background-color: #ffffff !important;
       color: #000000 !important;
@@ -194,6 +196,7 @@
       cursor: pointer;
       text-decoration: none;
       transition: transform 0.1s, opacity 0.2s;
+      user-select: none;
     }
     .btn:active {
       transform: scale(0.97);
@@ -292,6 +295,7 @@
       clip: rect(0, 0, 0, 0);
       white-space: nowrap;
       border-width: 0;
+      opacity: 0;
     }
 
     .hidden {
@@ -324,7 +328,7 @@
 
     <!-- Status Banner -->
     <div id="app-status" class="status-banner status-pill" role="region" aria-label="Status message">
-      <span id="status-text">System Ready. Upload a PDF or scan a photo to begin.</span>
+      <span id="status-text">System Ready. Tap Read Aloud to listen, or load a PDF/photo.</span>
       <span id="stats-counter" aria-live="polite">Words: 0 | Chars: 0</span>
     </div>
 
@@ -336,16 +340,17 @@
       <p>Select any PDF file from your device. All pages will be extracted sequentially into the reader below.</p>
       
       <div class="button-group">
-        <input type="file" id="pdf-file-input" accept=".pdf,application/pdf" class="hidden" onchange="handlePdfUpload(event)">
-        <button type="button" class="btn btn-primary" onclick="document.getElementById('pdf-file-input').click()" aria-label="Upload PDF Document">
+        <!-- Native Label Trigger: Guaranteed to open file chooser on Android without blocked JS clicks -->
+        <input type="file" id="pdf-file-input" accept=".pdf,application/pdf" class="sr-only" onchange="handlePdfUpload(event)">
+        <label for="pdf-file-input" class="btn btn-primary" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('pdf-file-input').click()" aria-label="Upload PDF Document">
           📁 Upload PDF Document
-        </button>
-        <button type="button" class="btn btn-secondary" onclick="loadSamplePdfText()" aria-label="Load Sample Document">
+        </label>
+        <button type="button" class="btn btn-secondary" onclick="loadSamplePdfText()" aria-label="Load Sample Prescription Document">
           📋 Load Sample Document
         </button>
       </div>
       <div id="pdf-loading-indicator" class="hidden" aria-live="polite">
-        <strong>Extracting PDF text... Please wait.</strong>
+        <strong style="color: #f59e0b;">Extracting PDF text... Please wait.</strong>
       </div>
     </section>
 
@@ -357,21 +362,21 @@
       <p>Use your phone camera or upload a photo of printed text, documents, or signs to extract text directly.</p>
 
       <div class="button-group">
-        <!-- Direct Camera Capture input for Android & Mobile -->
-        <input type="file" id="camera-scan-input" accept="image/*" capture="environment" class="hidden" onchange="handleImageFile(event)">
-        <!-- Image File Picker -->
-        <input type="file" id="image-picker-input" accept="image/*" class="hidden" onchange="handleImageFile(event)">
-
-        <button type="button" class="btn btn-primary" onclick="document.getElementById('camera-scan-input').click()" aria-label="Scan Document with Phone Camera">
+        <!-- Native Camera Input with capture="environment" -->
+        <input type="file" id="camera-scan-input" accept="image/*" capture="environment" class="sr-only" onchange="handleImageFile(event)">
+        <label for="camera-scan-input" class="btn btn-primary" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('camera-scan-input').click()" aria-label="Scan Document with Phone Camera">
           📷 Scan with Camera
-        </button>
-        <button type="button" class="btn btn-secondary" onclick="document.getElementById('image-picker-input').click()" aria-label="Upload Photo from Device">
+        </label>
+
+        <!-- Image File Picker -->
+        <input type="file" id="image-picker-input" accept="image/*" class="sr-only" onchange="handleImageFile(event)">
+        <label for="image-picker-input" class="btn btn-secondary" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('image-picker-input').click()" aria-label="Upload Photo from Device">
           🖼 Choose Photo File
-        </button>
+        </label>
       </div>
 
       <!-- Image Metadata & Preview Info -->
-      <div id="image-info-box" class="hidden" style="margin-top: 10px; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2);">
+      <div id="image-info-box" class="hidden" style="margin-top: 10px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.25);">
         <span id="image-meta-text">Image details</span>
       </div>
     </section>
@@ -401,14 +406,23 @@
         </button>
       </div>
 
-      <!-- Main Accessible Text Output Area -->
+      <!-- Main Accessible Text Output Area (Pre-filled with friendly guide) -->
       <label for="main-text-output" class="sr-only">Extracted text content to read aloud</label>
       <textarea 
         id="main-text-output" 
         class="text-output-area input-box" 
         placeholder="Extracted text from PDF, camera scan, or typed text will appear here. Tap 'Read Aloud' above to listen."
         aria-label="Document text editor and reader"
-        oninput="updateTextCounts()"></textarea>
+        oninput="updateTextCounts()">Welcome to Accessible Reader.
+Developed by Saifulla.
+
+This application is ready to read documents and photos aloud for you.
+
+Instructions:
+1. Tap "Upload PDF Document" to open and listen to any PDF book or letter.
+2. Tap "Scan with Camera" to take a photo of printed text or medicine labels.
+3. Tap "Read Aloud" anytime to listen to this text.
+4. You can also type or paste text directly into this box.</textarea>
 
       <!-- Adjustable Speech Settings (Speed, Pitch, Voice) -->
       <div class="settings-grid">
@@ -452,15 +466,37 @@
       isSpeaking: false,
       isPaused: false,
       utteranceChunks: [],
-      chunkIndex: 0
+      chunkIndex: 0,
+      audioCtx: null
     };
+
+    // --- Web Audio Chime Sound (Immediate Acoustic Feedback) ---
+    function playBeep(freq = 587.33, duration = 0.15) {
+      try {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioClass) return;
+        if (!State.audioCtx) State.audioCtx = new AudioClass();
+        if (State.audioCtx.state === 'suspended') State.audioCtx.resume();
+        const osc = State.audioCtx.createOscillator();
+        const gain = State.audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, State.audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.2, State.audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, State.audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(State.audioCtx.destination);
+        osc.start();
+        osc.stop(State.audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
 
     // --- ARIA Announcer & Status Updates ---
     function announce(msg, speakAloud = false) {
+      playBeep(659.25, 0.1);
       const announcer = document.getElementById('sr-announcer');
       if (announcer) {
         announcer.textContent = '';
-        setTimeout(() => { announcer.textContent = msg; }, 50);
+        setTimeout(() => { announcer.textContent = msg; }, 40);
       }
       const statusText = document.getElementById('status-text');
       if (statusText) {
@@ -528,66 +564,14 @@
           try {
             const typedarray = new Uint8Array(this.result);
             if (typeof pdfjsLib === 'undefined') {
-              throw new Error('PDF.js library is not available');
+              throw new Error('PDF.js library is loading. Please try again in a moment.');
             }
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+            try {
+              pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+            } catch(e) {}
 
-            const loadingTask = pdfjsLib.getDocument(typedarray);
+            const loadingTask = pdfjsLib.getDocument({ data: typedarray });
             const pdf = await loadingTask.promise;
             const numPages = pdf.numPages;
 
-            let extractedFullText = '';
-
-            for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-              const page = await pdf.getPage(pageNum);
-              const textContent = await page.getTextContent();
-              const pageText = textContent.items.map(item => item.str).join(' ');
-              extractedFullText += `[Page ${pageNum} of ${numPages}]\n${pageText}\n\n`;
-            }
-
-            const outputEl = document.getElementById('main-text-output');
-            if (outputEl) {
-              outputEl.value = extractedFullText.trim();
-              updateTextCounts();
-            }
-
-            if (loadingEl) loadingEl.classList.add('hidden');
-            const words = (extractedFullText.match(/\S+/g) || []).length;
-            const successMsg = `PDF extracted successfully! ${numPages} pages, ${words} words loaded.`;
-            announce(successMsg, true);
-          } catch (err) {
-            if (loadingEl) loadingEl.classList.add('hidden');
-            announce(`Error parsing PDF: ${err.message}`, true);
-          }
-        };
-
-        fileReader.onerror = () => {
-          if (loadingEl) loadingEl.classList.add('hidden');
-          announce('Error reading PDF file from device.', true);
-        };
-
-        fileReader.readAsArrayBuffer(file);
-      } catch (err) {
-        if (loadingEl) loadingEl.classList.add('hidden');
-        announce(`Could not load PDF: ${err.message}`, true);
-      }
-    }
-
-    function loadSamplePdfText() {
-      const sample = `PATIENT INSTRUCTION & PRESCRIPTION GUIDE
-Prescription #: 49201-B
-Patient Name: Jane Doe
-Date: October 22, 2026
-
-1. Amoxicillin 500mg Capsule
-- Take 1 capsule twice daily with meals for 10 days.
-- Complete full prescribed course.
-
-2. Daily Health Routine:
-- Check blood pressure every morning at 09:00 AM.
-- Stay hydrated and take rest.
-
-Emergency Contact:
-If fever or allergic symptoms occur, contact the clinic at 555-0199 immediately.`;
-
-      const outputEl = document.getElementById('main-text
+            let extracte
