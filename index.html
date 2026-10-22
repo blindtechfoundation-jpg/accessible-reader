@@ -78,6 +78,11 @@
       color: #000000 !important;
       font-weight: 900 !important;
     }
+    .theme-yellow .btn-back {
+      background-color: #1e293b !important;
+      color: #ffff00 !important;
+      border: 2px solid #ffff00 !important;
+    }
     .theme-yellow .status-pill {
       background-color: #000000 !important;
       color: #ffff00 !important;
@@ -108,6 +113,11 @@
     .theme-white .btn-primary {
       background-color: #000000 !important;
       color: #ffffff !important;
+    }
+    .theme-white .btn-back {
+      background-color: #f1f5f9 !important;
+      color: #000000 !important;
+      border: 2px solid #000000 !important;
     }
     .theme-white .status-pill {
       background-color: #f1f5f9 !important;
@@ -145,7 +155,7 @@
       letter-spacing: -0.5px;
     }
     .app-subtitle {
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       color: #fbbf24;
       font-weight: bold;
     }
@@ -160,15 +170,15 @@
 
     .card {
       border-radius: 16px;
-      padding: 20px;
+      padding: 22px;
       margin-bottom: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
     }
 
     .card-title {
       margin-top: 0;
       margin-bottom: 12px;
-      font-size: 1.3rem;
+      font-size: 1.35rem;
       font-weight: 800;
       display: flex;
       align-items: center;
@@ -179,27 +189,35 @@
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
 
-    /* Large Touch Friendly Buttons (min 52px height) */
+    /* Large Touch Friendly Buttons (min 54px height) */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      min-height: 52px;
-      padding: 12px 20px;
+      gap: 10px;
+      min-height: 54px;
+      padding: 12px 22px;
       font-size: 1.05rem;
       font-weight: bold;
-      border-radius: 12px;
+      border-radius: 14px;
       cursor: pointer;
       text-decoration: none;
-      transition: transform 0.1s, opacity 0.2s;
+      transition: transform 0.1s, opacity 0.2s, background-color 0.2s;
       user-select: none;
     }
     .btn:active {
       transform: scale(0.97);
+    }
+
+    .btn-block {
+      width: 100%;
+      text-align: left;
+      justify-content: space-between;
+      padding: 18px 24px;
+      font-size: 1.2rem;
     }
 
     .btn-primary {
@@ -229,6 +247,17 @@
       background-color: #047857;
     }
 
+    .btn-back {
+      background-color: #334155;
+      color: #f8fafc;
+      border: 2px solid #64748b;
+      font-size: 1.05rem;
+      margin-bottom: 16px;
+    }
+    .btn-back:hover {
+      background-color: #475569;
+    }
+
     /* Main Text Output Area */
     .text-output-area {
       width: 100%;
@@ -239,7 +268,7 @@
       line-height: 1.7;
       border-radius: 12px;
       resize: vertical;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
     /* Sliders & Select Controls */
@@ -261,12 +290,12 @@
       font-size: 0.95rem;
     }
     .setting-item input[type="range"] {
-      height: 36px;
+      height: 38px;
       accent-color: #f59e0b;
       cursor: pointer;
     }
     .setting-item select {
-      min-height: 44px;
+      min-height: 48px;
       padding: 8px 12px;
       border-radius: 8px;
       font-size: 1rem;
@@ -278,9 +307,9 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      padding: 12px 16px;
-      border-radius: 10px;
-      margin-bottom: 16px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      margin-bottom: 18px;
       font-weight: bold;
     }
 
@@ -301,12 +330,66 @@
     .hidden {
       display: none !important;
     }
+
+    /* Accessible Modal Backdrop & Dialog */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 9999;
+    }
+
+    .modal-box {
+      max-width: 500px;
+      width: 100%;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      border: 3px solid #f59e0b;
+      text-align: left;
+    }
+
+    .modal-title {
+      font-size: 1.4rem;
+      font-weight: 900;
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: #f59e0b;
+    }
+    .modal-body {
+      font-size: 1.05rem;
+      margin-bottom: 22px;
+      line-height: 1.6;
+    }
+
+    /* Menu Card items on Hub */
+    .menu-card {
+      cursor: pointer;
+      border: 2px solid #334155;
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .menu-card:hover, .menu-card:focus {
+      border-color: #f59e0b;
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body class="theme-dark size-normal">
 
   <!-- Live Announcer for Screen Readers (TalkBack / NVDA / VoiceOver) -->
   <div id="sr-announcer" class="sr-only" role="status" aria-live="assertive" aria-atomic="true"></div>
+
+  <!-- Hidden Native File Inputs (Linked directly to labels to guarantee opening on Android) -->
+  <input type="file" id="pdf-file-input" accept=".pdf,application/pdf" class="sr-only" onchange="handlePdfUpload(event)">
+  <input type="file" id="camera-scan-input" accept="image/*" capture="environment" class="sr-only" onchange="handleImageFile(event)">
+  <input type="file" id="photo-picker-input" accept="image/*" class="sr-only" onchange="handleImageFile(event)">
 
   <div class="container">
     
@@ -328,250 +411,166 @@
 
     <!-- Status Banner -->
     <div id="app-status" class="status-banner status-pill" role="region" aria-label="Status message">
-      <span id="status-text">System Ready. Tap Read Aloud to listen, or load a PDF/photo.</span>
+      <span id="status-text">System Ready. Select a feature below to begin.</span>
       <span id="stats-counter" aria-live="polite">Words: 0 | Chars: 0</span>
     </div>
 
-    <!-- MAIN FUNCTION 1: PDF READER -->
-    <section class="card" aria-labelledby="pdf-heading">
-      <h2 id="pdf-heading" class="card-title">
-        <span>📄</span> Function 1: PDF Document Reader
-      </h2>
-      <p>Select any PDF file from your device. All pages will be extracted sequentially into the reader below.</p>
-      
-      <div class="button-group">
-        <!-- Native Label Trigger: Guaranteed to open file chooser on Android without blocked JS clicks -->
-        <input type="file" id="pdf-file-input" accept=".pdf,application/pdf" class="sr-only" onchange="handlePdfUpload(event)">
-        <label for="pdf-file-input" class="btn btn-primary" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('pdf-file-input').click()" aria-label="Upload PDF Document">
-          📁 Upload PDF Document
-        </label>
-        <button type="button" class="btn btn-secondary" onclick="loadSamplePdfText()" aria-label="Load Sample Prescription Document">
-          📋 Load Sample Document
-        </button>
-      </div>
-      <div id="pdf-loading-indicator" class="hidden" aria-live="polite">
-        <strong style="color: #f59e0b;">Extracting PDF text... Please wait.</strong>
-      </div>
-    </section>
+    <!-- ========================================================================= -->
+    <!-- MAIN SCREEN: 3 CORE FEATURE HUBS                                          -->
+    <!-- ========================================================================= -->
+    <main id="window-hub">
+      <div class="card">
+        <h2 class="card-title">Select a Feature to Open:</h2>
+        <p style="margin-bottom: 20px;">Each option below opens in its own dedicated accessible window. Press the Back button at any time to return to this menu.</p>
 
-    <!-- MAIN FUNCTION 2: IMAGE SCAN & PHOTO DESCRIPTION -->
-    <section class="card" aria-labelledby="scan-heading">
-      <h2 id="scan-heading" class="card-title">
-        <span>📷</span> Function 2: Image Scan & Photo Description
-      </h2>
-      <p>Use your phone camera or upload a photo of printed text, documents, or signs to extract text directly.</p>
-
-      <div class="button-group">
-        <!-- Native Camera Input with capture="environment" -->
-        <input type="file" id="camera-scan-input" accept="image/*" capture="environment" class="sr-only" onchange="handleImageFile(event)">
-        <label for="camera-scan-input" class="btn btn-primary" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('camera-scan-input').click()" aria-label="Scan Document with Phone Camera">
-          📷 Scan with Camera
-        </label>
-
-        <!-- Image File Picker -->
-        <input type="file" id="image-picker-input" accept="image/*" class="sr-only" onchange="handleImageFile(event)">
-        <label for="image-picker-input" class="btn btn-secondary" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('image-picker-input').click()" aria-label="Upload Photo from Device">
-          🖼 Choose Photo File
-        </label>
-      </div>
-
-      <!-- Image Metadata & Preview Info -->
-      <div id="image-info-box" class="hidden" style="margin-top: 10px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.25);">
-        <span id="image-meta-text">Image details</span>
-      </div>
-    </section>
-
-    <!-- MAIN FUNCTION 3: TEXT READER & SPEECH CONTROLS -->
-    <section class="card" aria-labelledby="reader-heading">
-      <h2 id="reader-heading" class="card-title">
-        <span>🔊</span> Function 3: Text Reader & Speech Controls
-      </h2>
-
-      <!-- Primary Speech Action Buttons -->
-      <div class="button-group" role="toolbar" aria-label="Speech playback controls">
-        <button id="btn-speech-play" class="btn btn-primary" onclick="handlePlaySpeech()" aria-label="Read Text Aloud">
-          ▶ Read Aloud
-        </button>
-        <button id="btn-speech-pause" class="btn btn-secondary" onclick="handlePauseResumeSpeech()" aria-label="Pause or Resume Speech">
-          ⏸ Pause / Resume
-        </button>
-        <button id="btn-speech-stop" class="btn btn-danger" onclick="handleStopSpeech()" aria-label="Stop Reading Immediately">
-          ⏹ Stop
-        </button>
-        <button id="btn-clear-text" class="btn btn-secondary" onclick="handleClearText()" aria-label="Clear Text Output">
-          🗑 Clear Text
-        </button>
-        <button id="btn-copy-text" class="btn btn-secondary" onclick="handleCopyText()" aria-label="Copy Text to Clipboard">
-          📋 Copy Text
-        </button>
-      </div>
-
-      <!-- Main Accessible Text Output Area (Pre-filled with friendly guide) -->
-      <label for="main-text-output" class="sr-only">Extracted text content to read aloud</label>
-      <textarea 
-        id="main-text-output" 
-        class="text-output-area input-box" 
-        placeholder="Extracted text from PDF, camera scan, or typed text will appear here. Tap 'Read Aloud' above to listen."
-        aria-label="Document text editor and reader"
-        oninput="updateTextCounts()">Welcome to Accessible Reader.
-Developed by Saifulla.
-
-This application is ready to read documents and photos aloud for you.
-
-Instructions:
-1. Tap "Upload PDF Document" to open and listen to any PDF book or letter.
-2. Tap "Scan with Camera" to take a photo of printed text or medicine labels.
-3. Tap "Read Aloud" anytime to listen to this text.
-4. You can also type or paste text directly into this box.</textarea>
-
-      <!-- Adjustable Speech Settings (Speed, Pitch, Voice) -->
-      <div class="settings-grid">
-        <!-- Speed Slider -->
-        <div class="setting-item">
-          <label for="speech-rate-slider">Speech Speed: <span id="rate-value-badge" style="color: #f59e0b;">1.0x</span></label>
-          <input type="range" id="speech-rate-slider" min="0.5" max="2.2" step="0.1" value="1.0" oninput="handleRateChange(this.value)" aria-label="Speech speed slider">
+        <!-- Feature 1 Card -->
+        <div class="menu-card card" onclick="openWindow('window-pdf')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')openWindow('window-pdf')" aria-label="Open Function 1: PDF Document Reader">
+          <h3 class="card-title" style="color: #f59e0b; margin-bottom: 6px;">
+            <span>📄</span> Function 1: PDF Document Reader
+          </h3>
+          <p style="margin: 0 0 12px 0;">Select any PDF file from your device. All pages will be extracted sequentially into the reader.</p>
+          <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); openWindow('window-pdf');">
+            Open PDF Reader ➡
+          </button>
         </div>
 
-        <!-- Pitch Slider -->
-        <div class="setting-item">
-          <label for="speech-pitch-slider">Voice Pitch: <span id="pitch-value-badge" style="color: #f59e0b;">1.0</span></label>
-          <input type="range" id="speech-pitch-slider" min="0.6" max="1.4" step="0.1" value="1.0" oninput="handlePitchChange(this.value)" aria-label="Speech pitch slider">
+        <!-- Feature 2 Card -->
+        <div class="menu-card card" onclick="openWindow('window-image')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')openWindow('window-image')" aria-label="Open Function 2: Image Scan and Photo Description">
+          <h3 class="card-title" style="color: #38bdf8; margin-bottom: 6px;">
+            <span>📷</span> Function 2: Image Scan & Photo Description
+          </h3>
+          <p style="margin: 0 0 12px 0;">Use your phone camera or upload a photo of printed text, documents, or signs to extract text directly.</p>
+          <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); openWindow('window-image');">
+            Open Image Scanner ➡
+          </button>
         </div>
 
-        <!-- Voice Selector -->
-        <div class="setting-item">
-          <label for="voice-select-dropdown">Speech Voice:</label>
-          <select id="voice-select-dropdown" class="input-box" onchange="handleVoiceSelect(this.value)" aria-label="Select speech synthesizer voice">
-            <option value="">Default System Voice</option>
-          </select>
+        <!-- Feature 3 Card -->
+        <div class="menu-card card" onclick="openWindow('window-reader')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')openWindow('window-reader')" aria-label="Open Function 3: Text Reader and Speech Controls">
+          <h3 class="card-title" style="color: #10b981; margin-bottom: 6px;">
+            <span>🔊</span> Function 3: Text Reader & Speech Controls
+          </h3>
+          <p style="margin: 0 0 12px 0;">Read extracted or typed text aloud with pause, resume, speed, pitch, and voice controls.</p>
+          <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); openWindow('window-reader');">
+            Open Text Reader ➡
+          </button>
+        </div>
+
+        <!-- Exit Button -->
+        <div style="margin-top: 24px; text-align: center;">
+          <button type="button" class="btn btn-danger" onclick="promptExitApp()" aria-label="Exit Accessible Reader">
+            🚪 Exit Application
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- DEDICATED WINDOW 1: PDF DOCUMENT READER                                    -->
+    <!-- ========================================================================= -->
+    <section id="window-pdf" class="hidden" aria-labelledby="pdf-heading">
+      <button type="button" class="btn btn-back" onclick="goBackToHub()" aria-label="Back to Main Menu">
+        ⬅ Back to Main Menu
+      </button>
+
+      <div class="card">
+        <h2 id="pdf-heading" class="card-title">
+          <span>📄</span> Function 1: PDF Document Reader
+        </h2>
+        <p>Select any PDF file from your device. All pages will be extracted sequentially into the reader below.</p>
+        
+        <div class="button-group">
+          <!-- Native Label Trigger: Guaranteed to open file chooser on Android without blocked JS clicks -->
+          <label for="pdf-file-input" class="btn btn-primary" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('pdf-file-input').click()" aria-label="Upload PDF Document">
+            📁 Upload PDF Document
+          </label>
+          <button type="button" class="btn btn-secondary" onclick="loadSamplePdfText()" aria-label="Load Sample Prescription Document">
+            📋 Load Sample Document
+          </button>
+        </div>
+
+        <div id="pdf-loading-indicator" class="hidden" aria-live="polite" style="margin-bottom: 14px;">
+          <strong style="color: #f59e0b;">⏳ Extracting PDF text... Please wait.</strong>
+        </div>
+
+        <!-- Extracted PDF Text Preview & Controls -->
+        <label for="pdf-text-output" class="sr-only">Extracted PDF Text Content</label>
+        <textarea 
+          id="pdf-text-output" 
+          class="text-output-area input-box" 
+          placeholder="Extracted text from your uploaded PDF will appear here."
+          aria-label="Extracted PDF text"
+          oninput="syncPdfToShared()"></textarea>
+
+        <div class="button-group">
+          <button type="button" class="btn btn-primary" onclick="readPdfAloudNow()" aria-label="Read PDF Text Aloud">
+            ▶ Read Aloud Now
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="openSharedInReader()" aria-label="Open in Full Speech Reader">
+            🔊 Open in Full Speech Reader ➡
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="copyPdfText()" aria-label="Copy PDF Text">
+            📋 Copy Text
+          </button>
+          <button type="button" class="btn btn-danger" onclick="clearPdfText()" aria-label="Clear PDF Text">
+            🗑 Clear
+          </button>
         </div>
       </div>
     </section>
 
-  </div>
+    <!-- ========================================================================= -->
+    <!-- DEDICATED WINDOW 2: IMAGE SCAN & PHOTO DESCRIPTION                         -->
+    <!-- ========================================================================= -->
+    <section id="window-image" class="hidden" aria-labelledby="image-heading">
+      <button type="button" class="btn btn-back" onclick="goBackToHub()" aria-label="Back to Main Menu">
+        ⬅ Back to Main Menu
+      </button>
 
-  <script>
-    /* =========================================================================
-       ACCESSIBLE READER - STREAMLINED SINGLE-FILE SCRIPT
-       Developed by Saifulla
-       ========================================================================= */
+      <div class="card">
+        <h2 id="image-heading" class="card-title">
+          <span>📷</span> Function 2: Image Scan & Photo Description
+        </h2>
+        <p>Use your phone camera or upload a photo of printed text, documents, or signs to extract text directly.</p>
 
-    const State = {
-      theme: 'theme-dark',
-      fontSize: 'size-normal',
-      speechRate: 1.0,
-      speechPitch: 1.0,
-      selectedVoiceIdx: null,
-      voices: [],
-      isSpeaking: false,
-      isPaused: false,
-      utteranceChunks: [],
-      chunkIndex: 0,
-      audioCtx: null
-    };
+        <div class="button-group">
+          <!-- Native Camera Input with capture="environment" -->
+          <label for="camera-scan-input" class="btn btn-primary" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('camera-scan-input').click()" aria-label="Scan Document with Phone Camera">
+            📷 Scan Document with Phone Camera
+          </label>
 
-    // --- Web Audio Chime Sound (Immediate Acoustic Feedback) ---
-    function playBeep(freq = 587.33, duration = 0.15) {
-      try {
-        const AudioClass = window.AudioContext || window.webkitAudioContext;
-        if (!AudioClass) return;
-        if (!State.audioCtx) State.audioCtx = new AudioClass();
-        if (State.audioCtx.state === 'suspended') State.audioCtx.resume();
-        const osc = State.audioCtx.createOscillator();
-        const gain = State.audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, State.audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.2, State.audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, State.audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(State.audioCtx.destination);
-        osc.start();
-        osc.stop(State.audioCtx.currentTime + duration);
-      } catch (e) {}
-    }
+          <!-- Image File Picker -->
+          <label for="photo-picker-input" class="btn btn-secondary" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('photo-picker-input').click()" aria-label="Upload Photo from Device">
+            🖼 Upload Photo from Device
+          </label>
 
-    // --- ARIA Announcer & Status Updates ---
-    function announce(msg, speakAloud = false) {
-      playBeep(659.25, 0.1);
-      const announcer = document.getElementById('sr-announcer');
-      if (announcer) {
-        announcer.textContent = '';
-        setTimeout(() => { announcer.textContent = msg; }, 40);
-      }
-      const statusText = document.getElementById('status-text');
-      if (statusText) {
-        statusText.textContent = msg;
-      }
-      if (speakAloud) {
-        speakShortPhrase(msg);
-      }
-    }
+          <button type="button" class="btn btn-secondary" onclick="loadSampleImageScan()" aria-label="Test with Sample Photo">
+            ⚡ Test Sample Photo
+          </button>
+        </div>
 
-    function updateTextCounts() {
-      const ta = document.getElementById('main-text-output');
-      if (!ta) return;
-      const text = ta.value.trim();
-      const words = text ? (text.match(/\S+/g) || []).length : 0;
-      const chars = text.length;
-      const counter = document.getElementById('stats-counter');
-      if (counter) {
-        counter.textContent = `Words: ${words} | Chars: ${chars}`;
-      }
-    }
+        <!-- Image Metadata & Preview Info -->
+        <div id="image-info-box" class="hidden" style="margin-bottom: 14px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.25);">
+          <span id="image-meta-text">Image details</span>
+        </div>
 
-    // --- Theme & Font Settings ---
-    function setTheme(themeName) {
-      document.body.classList.remove('theme-dark', 'theme-yellow', 'theme-white');
-      document.body.classList.add(themeName);
-      State.theme = themeName;
-      try { localStorage.setItem('accessible_reader_theme', themeName); } catch(e){}
-      announce(`Theme set to ${themeName.replace('theme-', '')}`);
-    }
+        <!-- Extracted Image Text Preview & Controls -->
+        <label for="image-text-output" class="sr-only">Extracted Photo Text Content</label>
+        <textarea 
+          id="image-text-output" 
+          class="text-output-area input-box" 
+          placeholder="Extracted text from your camera scan or photo will appear here."
+          aria-label="Extracted Image text"
+          oninput="syncImageToShared()"></textarea>
 
-    function cycleFontSize() {
-      const sizes = ['size-normal', 'size-large', 'size-xl'];
-      const labels = ['Normal', 'Large', 'Extra Large'];
-      let idx = sizes.indexOf(State.fontSize);
-      idx = (idx + 1) % sizes.length;
-      document.body.classList.remove(...sizes);
-      document.body.classList.add(sizes[idx]);
-      State.fontSize = sizes[idx];
-      const btn = document.getElementById('btn-toggle-size');
-      if (btn) btn.textContent = `🔍 Size: ${labels[idx]}`;
-      try { localStorage.setItem('accessible_reader_font_size', sizes[idx]); } catch(e){}
-      announce(`Text size set to ${labels[idx]}`);
-    }
-
-    // =========================================================================
-    // 1. PDF READER ENGINE (PDF.js)
-    // =========================================================================
-    async function handlePdfUpload(event) {
-      const file = event.target.files && event.target.files[0];
-      if (!file) return;
-
-      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-        announce('Selected file is not a valid PDF.', true);
-        return;
-      }
-
-      announce(`Loading PDF: ${file.name}. Reading pages...`);
-      const loadingEl = document.getElementById('pdf-loading-indicator');
-      if (loadingEl) loadingEl.classList.remove('hidden');
-
-      try {
-        const fileReader = new FileReader();
-        fileReader.onload = async function() {
-          try {
-            const typedarray = new Uint8Array(this.result);
-            if (typeof pdfjsLib === 'undefined') {
-              throw new Error('PDF.js library is loading. Please try again in a moment.');
-            }
-            try {
-              pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-            } catch(e) {}
-
-            const loadingTask = pdfjsLib.getDocument({ data: typedarray });
-            const pdf = await loadingTask.promise;
-            const numPages = pdf.numPages;
-
-            let extracte
+        <div class="button-group">
+          <button type="button" class="btn btn-primary" onclick="readImageAloudNow()" aria-label="Read Scanned Text Aloud">
+            ▶ Read Aloud Now
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="openSharedInReader()" aria-label="Open in Full Speech Reader">
+            🔊 Open in Full Speech Reader ➡
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="copyImageText()" aria-label="Copy Scanned Text">
+            📋 Copy Text
+          </button>
+          <button type="button" class="bt
