@@ -1,1144 +1,406 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>accessible_reader</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Accessible Reader</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <!-- Tesseract.js CDN for Client-Side OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
   <style>
-    :root {
-      --bg: #000000;
-      --card: #141414;
-      --panel: #1c1c1c;
-      --accent: #ffcc00;
-      --accent-strong: #f0b400;
-      --text: #ffffff;
-      --muted: #cfcfcf;
-      --border: #2d2d2d;
-      --danger: #ff4d4d;
-      --success: #00d97a;
-      --shadow: rgba(0, 0, 0, 0.45);
-    }
-
+    /* Accessibility Base & Transitions */
     * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      -webkit-tap-highlight-color: rgba(255, 204, 0, 0.2);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
-
-    html, body {
-      min-height: 100%;
-      background: var(--bg);
-      color: var(--text);
-    }
-
+    
     body {
-      padding: 12px;
-      display: block;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      transition: background-color 0.25s ease, color 0.25s ease;
       min-height: 100vh;
-      line-height: 1.5;
-      font-size: 18px;
     }
 
-    button, input, textarea, select {
-      font: inherit;
+    /* High Contrast Themes */
+    .theme-dark {
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+    .theme-dark .panel-bg {
+      background-color: #1e293b;
+      border-color: #334155;
+    }
+    .theme-dark .card-hover:hover {
+      border-color: #38bdf8;
     }
 
-    button {
-      border: 2px solid var(--accent);
-      background: var(--card);
-      color: var(--text);
-      border-radius: 12px;
-      cursor: pointer;
-      transition: transform 0.12s ease, background 0.12s ease, opacity 0.12s ease;
-      user-select: none;
+    .theme-yellow {
+      background-color: #000000 !important;
+      color: #ffff00 !important;
+    }
+    .theme-yellow .panel-bg,
+    .theme-yellow .bg-slate-900,
+    .theme-yellow .bg-slate-800,
+    .theme-yellow .bg-slate-950 {
+      background-color: #121212 !important;
+      border-color: #ffff00 !important;
+      color: #ffff00 !important;
+    }
+    .theme-yellow button,
+    .theme-yellow input,
+    .theme-yellow select,
+    .theme-yellow textarea {
+      background-color: #000000 !important;
+      color: #ffff00 !important;
+      border-color: #ffff00 !important;
+    }
+    .theme-yellow .text-slate-400,
+    .theme-yellow .text-slate-300,
+    .theme-yellow .text-cyan-400,
+    .theme-yellow .text-amber-400 {
+      color: #ffff88 !important;
     }
 
-    button:hover { opacity: 0.98; }
-    button:active { transform: scale(0.985); }
-
-    button:focus-visible,
-    input:focus-visible,
-    textarea:focus-visible,
-    select:focus-visible,
-    .action-trigger:focus-visible {
-      outline: 3px solid var(--accent);
-      outline-offset: 2px;
+    .theme-white {
+      background-color: #000000 !important;
+      color: #ffffff !important;
+    }
+    .theme-white .panel-bg,
+    .theme-white .bg-slate-900,
+    .theme-white .bg-slate-800,
+    .theme-white .bg-slate-950 {
+      background-color: #18181b !important;
+      border-color: #ffffff !important;
+      color: #ffffff !important;
+    }
+    .theme-white button,
+    .theme-white input,
+    .theme-white select,
+    .theme-white textarea {
+      background-color: #000000 !important;
+      color: #ffffff !important;
+      border-color: #ffffff !important;
     }
 
-    #splash-screen {
-      min-height: 90vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      transition: opacity 0.25s ease, transform 0.25s ease;
+    .theme-light {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+    }
+    .theme-light .panel-bg,
+    .theme-light .bg-slate-900,
+    .theme-light .bg-slate-800,
+    .theme-light .bg-slate-950 {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    .theme-light button {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      border-color: #94a3b8;
+    }
+    .theme-light input,
+    .theme-light select,
+    .theme-light textarea {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #94a3b8 !important;
     }
 
-    .splash-card {
-      width: 100%;
-      max-width: 430px;
-      background: var(--card);
-      border: 3px solid var(--accent);
-      border-radius: 18px;
-      padding: 28px 18px 20px;
-      text-align: center;
-      box-shadow: 0 10px 30px var(--shadow);
+    /* Font Scaling */
+    .font-scale-normal {
+      font-size: 16px;
+    }
+    .font-scale-large {
+      font-size: 19px;
+    }
+    .font-scale-xl {
+      font-size: 23px;
     }
 
-    .splash-card h1 {
-      margin-bottom: 18px;
-      color: var(--accent);
-      font-size: clamp(1.9rem, 5vw, 2.4rem);
-      font-weight: 900;
-      letter-spacing: 0.4px;
+    /* Dyslexic friendly reading styling */
+    .font-dyslexic {
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+      word-spacing: 0.15em;
     }
 
-    .time-badge {
-      background: #050505;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px 14px;
-      margin-bottom: 22px;
+    /* Accessible Focus outlines */
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid #38bdf8 !important;
+      outline-offset: 2px !important;
     }
 
-    .date-display {
-      color: var(--muted);
-      margin-bottom: 8px;
-      font-size: 1.05rem;
+    /* Compass needle and dial animation */
+    #compass-needle {
+      transition: transform 0.15s cubic-bezier(0.1, 0.9, 0.2, 1);
+      transform-origin: center center;
     }
 
-    .time-display {
-      color: var(--accent);
-      font-size: clamp(1.6rem, 5vw, 2rem);
-      font-weight: 900;
-      letter-spacing: 0.04em;
+    /* Sentence highlight while TTS is speaking */
+    .sentence-active {
+      background-color: rgba(245, 158, 11, 0.35);
+      border-radius: 4px;
+      padding: 2px 4px;
+      outline: 2px solid #f59e0b;
     }
 
-    .developer-info {
-      font-size: 1.2rem;
-      color: var(--muted);
-      margin-bottom: 24px;
+    /* Custom Scrollbar for Accessibility */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
     }
-
-    .developer-name {
-      display: block;
-      margin-top: 6px;
-      color: var(--accent);
-      font-size: clamp(1.6rem, 5vw, 2.2rem);
-      font-weight: 900;
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
     }
-
-    .btn-start {
-      width: 100%;
-      padding: 18px 20px;
-      font-size: 1.45rem;
-      font-weight: 900;
-      background: var(--accent);
-      color: #000000;
-      border-color: var(--accent);
-      border-radius: 12px;
-      box-shadow: 0 8px 18px rgba(255, 204, 0, 0.22);
-      transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 5px;
     }
-
-    .btn-start:hover {
-      background: var(--accent-strong);
-      transform: translateY(-1px);
-      box-shadow: 0 12px 22px rgba(255, 204, 0, 0.28);
-    }
-
-    .btn-start:active {
-      transform: scale(0.98);
-    }
-
-    #app-container {
-      display: none;
-      max-width: 660px;
-      margin: 0 auto;
-      padding-bottom: 40px;
-    }
-
-    header {
-      text-align: center;
-      border-bottom: 2px solid var(--accent);
-      padding-bottom: 12px;
-      margin-bottom: 16px;
-    }
-
-    header h2 {
-      color: var(--accent);
-      font-size: clamp(1.4rem, 4vw, 1.9rem);
-      font-weight: 900;
-    }
-
-    .nav-tabs {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 10px;
-      margin-bottom: 14px;
-      scrollbar-width: none;
-    }
-
-    .nav-tabs::-webkit-scrollbar { display: none; }
-
-    .tab-btn {
-      flex: 0 0 auto;
-      min-width: 122px;
-      padding: 12px 14px;
-      font-size: 1rem;
-      font-weight: 800;
-      border-radius: 10px;
-      background: var(--card);
-      color: var(--text);
-      border-color: var(--border);
-    }
-
-    .tab-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #000000;
-    }
-
-    .app-panel { display: none; }
-    .app-panel.active { display: block; }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .action-trigger {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 58px;
-      padding: 14px 12px;
-      text-align: center;
-      font-weight: 800;
-      border-radius: 10px;
-      background: var(--card);
-      color: var(--text);
-      border: 2px solid var(--accent);
-      cursor: pointer;
-    }
-
-    .action-trigger:active {
-      background: var(--accent);
-      color: #000000;
-    }
-
-    .action-btn,
-    .full-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 56px;
-      width: 100%;
-      padding: 14px 12px;
-      border-radius: 12px;
-      font-weight: 800;
-      font-size: 1.05rem;
-      background: var(--card);
-      color: var(--text);
-      border: 2px solid var(--accent);
-    }
-
-    .action-btn.primary,
-    .full-btn.primary,
-    .btn-gold {
-      background: var(--accent);
-      color: #000000;
-      border-color: var(--accent);
-    }
-
-    .action-btn.alert,
-    .full-btn.alert {
-      border-color: var(--danger);
-      color: var(--danger);
-    }
-
-    .options-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin-bottom: 12px;
-      min-height: 58px;
-    }
-
-    .options-row label {
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    select,
-    input[type="text"],
-    textarea {
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid var(--accent);
-      background: #050505;
-      color: var(--text);
-      font-size: 1rem;
-      padding: 10px 12px;
-    }
-
-    input[type="text"] { margin-bottom: 10px; }
-
-    textarea {
-      min-height: 240px;
-      resize: vertical;
-      line-height: 1.55;
-      padding: 14px;
-      background: var(--card);
-      border: 2px solid var(--border);
-      margin-bottom: 12px;
-    }
-
-    textarea:focus,
-    input[type="text"]:focus,
-    select:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.15);
-    }
-
-    #live-status {
-      min-height: 30px;
-      margin-bottom: 12px;
-      text-align: center;
-      color: var(--accent);
-      font-size: 1.05rem;
-      font-weight: 800;
-    }
-
-    .stat-card {
-      background: var(--card);
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      padding: 18px 14px;
-      margin-bottom: 14px;
-      text-align: center;
-    }
-
-    .stat-card strong {
-      color: var(--text);
-      font-size: 1.05rem;
-    }
-
-    .stat-value {
-      color: var(--accent);
-      font-size: clamp(1.5rem, 4vw, 2.2rem);
-      font-weight: 900;
-      margin: 8px 0;
-    }
-
-    .calc-screen {
-      background: #050505;
-      border: 2px solid var(--accent);
-      border-radius: 12px;
-      min-height: 74px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding: 18px 14px;
-      font-size: clamp(1.8rem, 6vw, 2.5rem);
-      font-weight: 800;
-      color: var(--accent);
-      word-break: break-all;
-      margin-bottom: 12px;
-    }
-
-    .calc-keypad {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .calc-keypad button {
-      min-height: 64px;
-      font-size: 1.4rem;
-      font-weight: 900;
-      background: var(--card);
-      border-color: var(--border);
-      color: var(--text);
-    }
-
-    .task-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 10px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
-
-    .task-row .task-text {
-      flex: 1;
-      word-break: break-word;
-      color: var(--text);
-    }
-
-    .task-row .task-done {
-      text-decoration: line-through;
-      color: var(--muted);
-    }
-
-    .task-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .task-actions button {
-      min-height: 36px;
-      padding: 8px 10px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      border-radius: 8px;
-    }
-
-    .small-btn {
-      background: var(--card);
-      border-color: var(--border);
-      color: var(--text);
-    }
-
-    .danger-btn {
-      border-color: var(--danger);
-      color: var(--danger);
-    }
-
-    .hidden { display: none !important; }
-
-    @media (max-width: 420px) {
-      body { padding: 10px; }
-      .splash-card { padding-left: 14px; padding-right: 14px; }
-      .tab-btn { min-width: 110px; }
-      .grid-2 { grid-template-columns: 1fr; }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
     }
   </style>
 </head>
-<body>
-  <div id="splash-screen" aria-live="polite">
-    <div class="splash-card">
-      <h1>accessible_reader</h1>
-      <div class="time-badge">
-        <div id="splash-date" class="date-display">Loading date...</div>
-        <div id="splash-time" class="time-display">--:--:--</div>
+<body class="theme-dark font-scale-normal antialiased min-h-screen flex flex-col select-text">
+
+  <!-- Screen Reader Live Announcer -->
+  <div id="sr-announcer" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+  <!-- In-Page Toast Notification (Safe alternative to alert()) -->
+  <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 pointer-events-none w-11/12 max-w-md"></div>
+
+  <!-- In-Page Confirmation Modal (Safe alternative to confirm()) -->
+  <div id="confirm-modal" class="fixed inset-0 z-[110] bg-black/80 flex items-center justify-center p-4 hidden">
+    <div class="panel-bg bg-slate-900 border-2 border-amber-400 rounded-2xl p-6 w-full max-w-md shadow-2xl text-center">
+      <h3 id="confirm-modal-title" class="text-xl font-bold mb-3 text-amber-400">Confirmation</h3>
+      <p id="confirm-modal-message" class="text-slate-200 mb-6 text-base leading-relaxed"></p>
+      <div class="flex gap-4 justify-center">
+        <button id="confirm-modal-cancel" class="px-5 py-3 rounded-xl border border-slate-500 font-semibold text-slate-200 hover:bg-slate-800 min-w-[100px]">Cancel</button>
+        <button id="confirm-modal-ok" class="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 font-bold text-slate-950 min-w-[100px]">OK</button>
       </div>
-      <div class="developer-info">
-        Developed by
-        <span class="developer-name">Saifulla</span>
-      </div>
-      <button type="button" class="btn-start" id="start-btn" aria-label="Continue to app">Next ▶</button>
     </div>
   </div>
 
-  <div id="app-container" aria-live="polite">
-    <header>
-      <h2>accessible_reader</h2>
+  <!-- ========================================== -->
+  <!-- 1. STARTUP SPLASH SCREEN                    -->
+  <!-- ========================================== -->
+  <section id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-between p-6 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-center select-none overflow-y-auto">
+    <!-- Top Branding & Date -->
+    <div class="w-full max-w-lg mt-4">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-500/50 text-cyan-300 text-sm font-medium mb-3">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        Accessible Reader v2.6 Ready
+      </div>
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-2">
+        Accessible <span class="text-amber-400">Reader</span>
+      </h1>
+      <p class="text-slate-300 text-base md:text-lg">
+        Empowering Low-Vision & Accessible Document Reading
+      </p>
+    </div>
+
+    <!-- Center Card: Live Date, Live Time & Developer Credit -->
+    <div class="w-full max-w-md my-auto py-4">
+      <div class="panel-bg bg-slate-900/90 border-2 border-slate-700/80 rounded-2xl p-6 shadow-2xl space-y-5 backdrop-blur-sm">
+        <!-- Live System Date -->
+        <div>
+          <div class="text-xs uppercase tracking-widest text-slate-400 font-semibold mb-1">Live System Date</div>
+          <div id="splash-date" class="text-xl md:text-2xl font-bold text-slate-100 py-1">Loading Date...</div>
+        </div>
+
+        <!-- Live System Time -->
+        <div class="bg-slate-950/70 rounded-xl p-4 border border-slate-800">
+          <div class="text-xs uppercase tracking-widest text-amber-400 font-semibold mb-1">Live System Time</div>
+          <div id="splash-time" class="text-3xl md:text-4xl font-mono font-black text-amber-400 tracking-wider">--:--:-- --</div>
+        </div>
+
+        <!-- Developer Credit (Prominently displayed) -->
+        <div class="p-3.5 bg-gradient-to-r from-amber-500/20 via-amber-400/10 to-amber-500/20 border-2 border-amber-400 rounded-xl">
+          <div class="text-xs text-amber-300/80 uppercase tracking-wider font-medium">Project Author</div>
+          <div class="text-xl font-black text-amber-300 tracking-wide">Developed by Saifulla</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Controls & Guaranteed Non-Freezing Next Button -->
+    <div class="w-full max-w-md space-y-4 mb-4">
+      <!-- Quick Accessibility Bar on Splash -->
+      <div class="flex items-center justify-around gap-2 p-2 bg-slate-900/80 rounded-xl border border-slate-800 text-xs text-slate-300">
+        <button id="splash-btn-contrast" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 font-medium">
+          🎨 Toggle Contrast
+        </button>
+        <button id="splash-btn-fontsize" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 font-medium">
+          🔍 Font Size
+        </button>
+        <button id="splash-btn-voice" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 font-medium">
+          🔊 Test Speech
+        </button>
+      </div>
+
+      <!-- Guaranteed Non-Freezing "Next ▶" Transition Button -->
+      <button id="btn-splash-next" onclick="enterMainHub()" class="w-full py-4 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-2xl tracking-wide shadow-xl flex items-center justify-center gap-3 transition-transform cursor-pointer border-2 border-amber-300" aria-label="Enter Accessible Reader Main Hub">
+        <span>Next ▶</span>
+        <span class="text-base font-bold bg-slate-950/20 px-3 py-1 rounded-full text-slate-900">Enter Hub</span>
+      </button>
+      <div class="text-xs text-slate-400">Tap Next or press Space / Enter on keyboard</div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 2. MAIN HUB & TABS NAVIGATION              -->
+  <!-- ========================================== -->
+  <main id="main-hub" class="hidden flex-1 flex flex-col p-4 md:p-6 max-w-5xl mx-auto w-full">
+    <!-- Hub Sticky Header Bar -->
+    <header class="panel-bg bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-amber-500 flex items-center justify-center text-slate-950 font-black text-2xl shadow">
+          📖
+        </div>
+        <div>
+          <h2 class="text-xl md:text-2xl font-black text-white leading-tight">Accessible Reader</h2>
+          <div class="text-xs text-amber-400 font-medium">Main Hub & Navigation • Saifulla</div>
+        </div>
+      </div>
+
+      <!-- Right Actions: GitHub Code Copy, Theme, Font, Sound & Settings -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button id="btn-quick-copy-github" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow" title="Copy clean index.html to paste straight into GitHub">
+          <span>📋 Copy Code for GitHub</span>
+        </button>
+        <div id="hub-clock-pill" class="hidden sm:block text-xs font-mono font-bold px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-amber-300">
+          --:--:--
+        </div>
+        <button id="btn-toggle-theme" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-semibold text-slate-200" title="Switch Theme (Dark, Yellow, White, Light)">
+          🎨 Theme
+        </button>
+        <button id="btn-toggle-fontsize" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-semibold text-slate-200" title="Adjust Text Size">
+          🔍 Size
+        </button>
+        <button id="btn-toggle-sound" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-semibold text-slate-200" title="Speech Voice Mute / Unmute">
+          🔊 Voice
+        </button>
+        <button id="btn-open-settings" class="p-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500 text-sm font-bold text-amber-300" title="App Settings & Export">
+          ⚙ Settings
+        </button>
+      </div>
     </header>
 
-    <nav class="nav-tabs" aria-label="Application tabs">
-      <button type="button" class="tab-btn active" data-panel="panel-reader" data-label="Reader">📖 Reader</button>
-      <button type="button" class="tab-btn" data-panel="panel-ai" data-label="AI Assistant">🤖 AI Assistant</button>
-      <button type="button" class="tab-btn" data-panel="panel-sensors" data-label="Sensors">🧭 Sensors</button>
-      <button type="button" class="tab-btn" data-panel="panel-calc" data-label="Calculator">🧮 Calculator</button>
-      <button type="button" class="tab-btn" data-panel="panel-tools" data-label="Daily Tools">🛠 Tools</button>
+    <!-- Quick Tool Tabs Bar (Instant Navigation) -->
+    <nav class="flex gap-2 mb-6 overflow-x-auto pb-1" aria-label="Core Feature Tabs">
+      <button onclick="openWindow('window-reader')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-amber-500/20 border border-slate-700 hover:border-amber-400 text-slate-200 hover:text-amber-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
+        <span>📄 Reader & Editor</span>
+      </button>
+      <button onclick="openWindow('window-ai')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-cyan-500/20 border border-slate-700 hover:border-cyan-400 text-slate-200 hover:text-cyan-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
+        <span>🤖 AI Assistant</span>
+      </button>
+      <button onclick="openWindow('window-compass')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-emerald-500/20 border border-slate-700 hover:border-emerald-400 text-slate-200 hover:text-emerald-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
+        <span>🧭 Sensors & Compass</span>
+      </button>
+      <button onclick="openWindow('window-calculator')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-purple-500/20 border border-slate-700 hover:border-purple-400 text-slate-200 hover:text-purple-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
+        <span>🔢 Talking Calculator</span>
+      </button>
+      <button onclick="openWindow('window-reminders')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-rose-500/20 border border-slate-700 hover:border-rose-400 text-slate-200 hover:text-rose-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
+        <span>⏰ Daily Reminders</span>
+      </button>
     </nav>
 
-    <div id="live-status" role="status" aria-live="polite">Ready</div>
-
-    <section id="panel-reader" class="app-panel active">
-      <div class="grid-2">
-        <label class="action-trigger" for="file-input-box" tabindex="0">📄 Open Document</label>
-        <input id="file-input-box" type="file" accept=".txt,.csv,.json,.html" onchange="handleFileOpen(event)" />
-
-        <label class="action-trigger" for="cam-input-box" tabindex="0">📷 Camera / Photo</label>
-        <input id="cam-input-box" type="file" accept="image/*" onchange="handlePhotoScan(event)" />
+    <!-- Welcome / Status Card -->
+    <div class="panel-bg bg-gradient-to-r from-slate-900 to-slate-850 border border-slate-800 rounded-2xl p-4 mb-6 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">✨</span>
+        <div>
+          <p class="text-sm font-bold text-slate-200">System Ready & Speech Active</p>
+          <p class="text-xs text-slate-400">Select any dedicated tool below. Press Android Back anytime to safely return here.</p>
+        </div>
       </div>
-
-      <div class="options-row">
-        <label for="speech-speed"><strong>Reading Speed:</strong></label>
-        <select id="speech-speed" aria-label="Reading speed">
-          <option value="0.8">0.8x Slow</option>
-          <option value="1" selected>1.0x Normal</option>
-          <option value="1.2">1.2x Up</option>
-          <option value="1.5">1.5x Fast</option>
-        </select>
-      </div>
-
-      <textarea id="text-editor-box" placeholder="Document text will appear here...">Welcome to accessible_reader.
-
-• Tap "Open Document" to read text files.
-• Tap "Camera / Photo" to inspect images.
-• Tap "Read Aloud" to listen to text.</textarea>
-
-      <div class="grid-2">
-        <button type="button" class="action-btn primary" onclick="readWorkspaceText()">▶ Read Aloud</button>
-        <button type="button" class="action-btn" onclick="stopAudio()">⏹ Stop</button>
-      </div>
-
-      <div class="grid-2">
-        <button type="button" class="action-btn" onclick="copyWorkspaceText()">📋 Copy Text</button>
-        <button type="button" class="action-btn alert" onclick="clearWorkspaceText()">✖ Clear</button>
-      </div>
-    </section>
-
-    <section id="panel-ai" class="app-panel">
-      <input id="ai-user-prompt" type="text" placeholder="Ask AI a question..." />
-      <div class="grid-2">
-        <button type="button" class="action-btn primary" onclick="triggerAIAssistant()">💬 Ask AI</button>
-        <button type="button" class="action-btn" onclick="summarizeWorkspace()">📝 Summarize Reader</button>
-      </div>
-      <textarea id="ai-response-box" placeholder="AI responses and summaries appear here..."></textarea>
-      <button type="button" class="full-btn" onclick="clearAIOutput()">Clear AI Output</button>
-    </section>
-
-    <section id="panel-sensors" class="app-panel">
-      <div class="stat-card">
-        <div><strong>Tactile Compass</strong></div>
-        <div id="comp-deg" class="stat-value">--°</div>
-        <div id="comp-name">Detecting orientation...</div>
-      </div>
-      <button type="button" class="full-btn primary" onclick="announceCompass()">📢 Announce Compass</button>
-    </section>
-
-    <section id="panel-calc" class="app-panel">
-      <div id="calc-screen-view" class="calc-screen" aria-live="assertive">0</div>
-      <div class="calc-keypad">
-        <button type="button" onclick="calcKey('C')">C</button>
-        <button type="button" onclick="calcKey('(')" >(</button>
-        <button type="button" onclick="calcKey(')')">)</button>
-        <button type="button" onclick="calcKey('/')">÷</button>
-
-        <button type="button" onclick="calcKey('7')">7</button>
-        <button type="button" onclick="calcKey('8')">8</button>
-        <button type="button" onclick="calcKey('9')">9</button>
-        <button type="button" onclick="calcKey('*')">×</button>
-
-        <button type="button" onclick="calcKey('4')">4</button>
-        <button type="button" onclick="calcKey('5')">5</button>
-        <button type="button" onclick="calcKey('6')">6</button>
-        <button type="button" onclick="calcKey('-')">-</button>
-
-        <button type="button" onclick="calcKey('1')">1</button>
-        <button type="button" onclick="calcKey('2')">2</button>
-        <button type="button" onclick="calcKey('3')">3</button>
-        <button type="button" onclick="calcKey('+')">+</button>
-
-        <button type="button" onclick="calcKey('0')">0</button>
-        <button type="button" onclick="calcKey('.')">.</button>
-        <button type="button" onclick="calcKey('DEL')">⌫</button>
-        <button type="button" class="btn-gold" onclick="calcKey('=')">=</button>
-      </div>
-    </section>
-
-    <section id="panel-tools" class="app-panel">
-      <div class="stat-card">
-        <div><strong>Time & Battery</strong></div>
-        <div id="battery-status-view" class="stat-value">Checking Battery...</div>
-        <button type="button" class="full-btn primary" style="margin-top: 10px;" onclick="announceTimeAndBattery()">🔋 Announce Time & Battery</button>
-      </div>
-
-      <div class="stat-card">
-        <div><strong>My Reminders</strong></div>
-        <input id="task-input-field" type="text" placeholder="Type a reminder..." />
-        <button type="button" class="full-btn primary" onclick="saveTaskItem()">➕ Save Reminder</button>
-        <div id="tasks-container-box" style="margin-top: 12px;"></div>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    (() => {
-      const STORAGE_KEY = 'accessible-reader-reminders-v1';
-      let calcExpr = '';
-
-      function $(id) { return document.getElementById(id); }
-      function sanitizeText(value) { return typeof value === 'string' ? value.trim() : ''; }
-
-      function setStatus(message) {
-        const el = $('live-status');
-        if (!el) return;
-        const clean = sanitizeText(message) || 'Ready';
-        el.textContent = clean;
-      }
-
-      function updateSplashClock() {
-        const now = new Date();
-        const dateEl = $('splash-date');
-        const timeEl = $('splash-time');
-
-        if (dateEl) {
-          dateEl.textContent = now.toLocaleDateString(undefined, {
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-          });
-        }
-
-        if (timeEl) {
-          timeEl.textContent = now.toLocaleTimeString(undefined, {
-            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
-          });
-        }
-      }
-
-      function startApplication() {
-        const splash = $('splash-screen');
-        const app = $('app-container');
-
-        if (splash) {
-          splash.style.opacity = '0';
-          splash.style.transform = 'scale(0.98)';
-        }
-
-        if (app) {
-          app.style.display = 'block';
-        }
-
-        setTimeout(() => {
-          if (splash) splash.classList.add('hidden');
-        }, 220);
-
-        setStatus('Welcome to accessible_reader');
-        safeSpeak('Welcome to accessible reader.');
-      }
-
-      function switchTab(panelId, button) {
-        const panels = document.querySelectorAll('.app-panel');
-        const tabs = document.querySelectorAll('.tab-btn');
-
-        panels.forEach(panel => {
-          panel.classList.toggle('active', panel.id === panelId);
-        });
-
-        tabs.forEach(tab => {
-          tab.classList.toggle('active', tab === button);
-        });
-
-        const label = button ? (button.dataset.label || button.textContent || 'Tab') : 'Tab';
-        setStatus(label);
-        safeSpeak(label);
-      }
-
-      function chunkSpeechText(text, maxLength = 180) {
-        const cleaned = text.replace(/\s+/g, ' ').trim();
-        if (!cleaned) return [];
-        if (cleaned.length <= maxLength) return [cleaned];
-
-        const chunks = [];
-        let current = '';
-        cleaned.split(' ').forEach(word => {
-          const next = current ? current + ' ' + word : word;
-          if (next.length <= maxLength) {
-            current = next;
-          } else {
-            if (current) chunks.push(current);
-            current = word;
-          }
-        });
-        if (current) chunks.push(current);
-        return chunks;
-      }
-
-      function safeSpeak(text) {
-        const message = sanitizeText(text);
-        if (!message) return;
-
-        try {
-          const supported = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
-          if (!supported) {
-            setStatus('Speech not available on this device.');
-            return;
-          }
-
-          const synth = window.speechSynthesis;
-          if (typeof synth.cancel === 'function') synth.cancel();
-
-          const chunks = chunkSpeechText(message);
-          const selectedRate = Number(($('speech-speed') || {}).value) || 1;
-
-          chunks.forEach(chunk => {
-            const utterance = new SpeechSynthesisUtterance(chunk);
-            utterance.lang = 'en-US';
-            utterance.rate = Math.min(2, Math.max(0.5, selectedRate));
-            utterance.pitch = 1;
-            utterance.volume = 1;
-            synth.speak(utterance);
-          });
-
-          setStatus('Speaking...');
-        } catch (error) {
-          console.warn('safeSpeak failed:', error);
-          setStatus('Speech is unavailable in this browser.');
-        }
-      }
-
-      function stopAudio() {
-        try {
-          if ('speechSynthesis' in window && typeof window.speechSynthesis.cancel === 'function') {
-            window.speechSynthesis.cancel();
-          }
-        } catch (error) {
-          console.warn('stopAudio error:', error);
-        }
-        setStatus('Playback stopped.');
-      }
-
-      function readWorkspaceText() {
-        const editor = $('text-editor-box');
-        if (!editor) return;
-        const value = editor.value.trim();
-
-        if (!value) {
-          setStatus('Text box is empty.');
-          safeSpeak('Text box is empty.');
-          return;
-        }
-
-        setStatus('Reading aloud...');
-        safeSpeak(value);
-      }
-
-      function copyWorkspaceText() {
-        const editor = $('text-editor-box');
-        if (!editor) return;
-        const text = editor.value;
-
-        if (!text) {
-          setStatus('Nothing to copy.');
-          safeSpeak('Nothing to copy.');
-          return;
-        }
-
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText(text)
-            .then(() => {
-              setStatus('Text copied.');
-              safeSpeak('Text copied.');
-            })
-            .catch(() => {
-              setStatus('Copy failed.');
-              safeSpeak('Copy failed.');
-            });
-        } else {
-          editor.select();
-          try {
-            document.execCommand('copy');
-            setStatus('Text copied.');
-            safeSpeak('Text copied.');
-          } catch (error) {
-            setStatus('Copy unsupported in this browser.');
-            safeSpeak('Copy unsupported in this browser.');
-          }
-        }
-      }
-
-      function clearWorkspaceText() {
-        const editor = $('text-editor-box');
-        if (!editor) return;
-        stopAudio();
-        editor.value = '';
-        setStatus('Cleared.');
-        safeSpeak('Cleared.');
-      }
-
-      function clearAIOutput() {
-        const box = $('ai-response-box');
-        if (box) box.value = '';
-        setStatus('AI output cleared.');
-        safeSpeak('AI output cleared.');
-      }
-
-      function createSummary(text) {
-        const normalized = (text || '').replace(/\s+/g, ' ').replace(/\n+/g, ' ').trim();
-        if (!normalized) return 'No summary available.';
-        const sentences = normalized.match(/[^.!?]+[.!?]?/g) || [normalized];
-        const firstThree = sentences.slice(0, 3).map(s => s.trim()).filter(Boolean);
-        return firstThree.length ? 'Summary:\n' + firstThree.join(' ') : 'No summary available.';
-      }
-
-      function buildAIResponse(question) {
-        const q = question.toLowerCase();
-        const readerText = ($('text-editor-box') || {}).value || '';
-
-        if (!readerText && !q) return 'Please type a question or add text to the reader.';
-        if (q.includes('hello') || q.includes('hi')) return 'Hello! I am your Accessible Reader AI assistant. I can summarize text, answer simple questions, and help you use the app.';
-        if (q.includes('summarize') || q.includes('summary')) return createSummary(readerText) || 'There is no reader text to summarize yet.';
-        if (q.includes('reminder') || q.includes('task')) return 'Your reminders are stored in local storage on this device so they remain available after reload.';
-        if (q.includes('calculate') || q.includes('math')) return 'Use the Calculator tab for arithmetic operations and quick calculations.';
-        if (q.includes('battery')) return 'The Daily Tools tab checks battery status when the browser supports it.';
-        if (q.includes('read') || q.includes('reader')) return 'Open the Reader tab, load a document, and press Read Aloud to hear the text.';
-        if (q.includes('sensor') || q.includes('compass')) return 'The Sensors tab uses your device orientation to estimate direction when browser sensor access is available.';
-        return 'I can help with reading, summarizing text, reminders, sensor support, and calculator use. Ask a simple question and I will guide you.';
-      }
-
-      function triggerAIAssistant() {
-        const input = $('ai-user-prompt');
-        if (!input) return;
-        const question = input.value.trim();
-
-        if (!question) {
-          setStatus('Type a question first.');
-          safeSpeak('Type a question first.');
-          return;
-        }
-
-        setStatus('Processing...');
-        safeSpeak('Processing.');
-
-        const response = buildAIResponse(question);
-        const box = $('ai-response-box');
-        if (box) box.value = response;
-        setStatus('Ready.');
-        safeSpeak(response);
-      }
-
-      function summarizeWorkspace() {
-        const editor = $('text-editor-box');
-        if (!editor) return;
-        const text = editor.value.trim();
-
-        if (!text) {
-          setStatus('Reader text is empty.');
-          safeSpeak('Reader text is empty.');
-          return;
-        }
-
-        const summary = createSummary(text);
-        const box = $('ai-response-box');
-        if (box) box.value = summary;
-        setStatus('Summary ready.');
-        safeSpeak(summary);
-      }
-
-      function setupCompass() {
-        const degEl = $('comp-deg');
-        const nameEl = $('comp-name');
-
-        if (!('DeviceOrientationEvent' in window)) {
-          if (degEl) degEl.textContent = 'N/A';
-          if (nameEl) nameEl.textContent = 'Device sensors unavailable';
-          return;
-        }
-
-        const directions = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
-
-        function handleOrientation(event) {
-          try {
-            let heading = null;
-            if (typeof event.webkitCompassHeading === 'number') {
-              heading = event.webkitCompassHeading;
-            } else if (typeof event.alpha === 'number') {
-              heading = (360 - Number(event.alpha)) % 360;
-            }
-
-            if (heading === null || Number.isNaN(heading)) return;
-            const normalized = ((heading % 360) + 360) % 360;
-            const index = Math.round(normalized / 45) % directions.length;
-
-            if (degEl) degEl.textContent = `${Math.round(normalized)}°`;
-            if (nameEl) nameEl.textContent = directions[index];
-          } catch (error) {
-            console.warn('Compass update error:', error);
-          }
-        }
-
-        window.addEventListener('deviceorientation', handleOrientation, true);
-      }
-
-      function announceCompass() {
-        const deg = ($('comp-deg') || {}).textContent || 'N/A';
-        const name = ($('comp-name') || {}).textContent || 'unavailable';
-        setStatus('Compass announced.');
-        safeSpeak(`${deg}, facing ${name}`);
-      }
-
-      function evaluateExpression(expression) {
-        const clean = String(expression)
-          .replace(/×/g, '*')
-          .replace(/÷/g, '/')
-          .replace(/−/g, '-')
-          .replace(/\s+/g, '');
-
-        if (!clean) return '0';
-        if (!/^[0-9+\-*/().]+$/.test(clean)) throw new Error('Invalid expression');
-
-        const result = Function('"use strict"; return (' + clean + ')')();
-        if (!Number.isFinite(result)) throw new Error('Invalid result');
-
-        return String(Number(result.toFixed(10)));
-      }
-
-      function calcKey(key) {
-        const screen = $('calc-screen-view');
-        if (!screen) return;
-
-        if (key === 'C') {
-          calcExpr = '';
-          screen.textContent = '0';
-          setStatus('Calculator cleared.');
-          return;
-        }
-
-        if (key === 'DEL') {
-          calcExpr = calcExpr.slice(0, -1);
-          screen.textContent = calcExpr || '0';
-          setStatus('Deleted.');
-          return;
-        }
-
-        if (key === '=') {
-          try {
-            const result = evaluateExpression(calcExpr);
-            screen.textContent = result;
-            calcExpr = result;
-            setStatus('Answer ready.');
-            safeSpeak(`Answer is ${result}`);
-          } catch (error) {
-            screen.textContent = 'Error';
-            calcExpr = '';
-            setStatus('Invalid calculation.');
-            safeSpeak('Invalid calculation.');
-          }
-          return;
-        }
-
-        const allowed = ['0','1','2','3','4','5','6','7','8','9','.','+','-','*','/','(',')'];
-        if (!allowed.includes(key)) return;
-
-        calcExpr += key;
-        screen.textContent = calcExpr;
-      }
-
-      async function updateBatteryStatus() {
-        const el = $('battery-status-view');
-        if (!el) return;
-
-        try {
-          if (navigator.getBattery) {
-            const battery = await navigator.getBattery();
-            const percent = Math.round(battery.level * 100);
-            const state = battery.charging ? 'Charging' : 'Battery';
-            el.textContent = `${percent}% • ${state}`;
-            return;
-          }
-
-          if ('battery' in navigator && navigator.battery) {
-            const battery = navigator.battery;
-            const percent = Math.round(battery.level * 100);
-            const state = battery.charging ? 'Charging' : 'Battery';
-            el.textContent = `${percent}% • ${state}`;
-            return;
-          }
-
-          el.textContent = 'Unavailable';
-        } catch (error) {
-          console.warn('Battery detection failed:', error);
-          el.textContent = 'Unavailable';
-        }
-      }
-
-      function announceTimeAndBattery() {
-        const now = new Date();
-        const timeText = now.toLocaleTimeString(undefined, {
-          hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
-        });
-
-        const batteryEl = $('battery-status-view');
-        const batteryText = batteryEl ? batteryEl.textContent : 'Battery unavailable';
-        const message = `The time is ${timeText}. Battery status is ${batteryText}.`;
-        setStatus('Time and battery announced.');
-        safeSpeak(message);
-      }
-
-      function loadTasks() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          return raw ? JSON.parse(raw) : [];
-        } catch (error) {
-          console.warn('Unable to read reminders:', error);
-          return [];
-        }
-      }
-
-      function saveTasks(tasks) {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-        } catch (error) {
-          console.warn('Unable to save reminders:', error);
-        }
-      }
-
-      function renderTasks() {
-        const container = $('tasks-container-box');
-        if (!container) return;
-
-        const tasks = loadTasks();
-        if (!tasks.length) {
-          container.innerHTML = '<div style="color: var(--muted); padding: 10px 0;">No reminders saved yet.</div>';
-          return;
-        }
-
-        container.innerHTML = '';
-        tasks.forEach(task => {
-          const row = document.createElement('div');
-          row.className = 'task-row';
-
-          const taskText = document.createElement('div');
-          taskText.className = 'task-text' + (task.done ? ' task-done' : '');
-          taskText.textContent = task.text;
-
-          const actions = document.createElement('div');
-          actions.className = 'task-actions';
-
-          const toggle = document.createElement('button');
-          toggle.type = 'button';
-          toggle.className = 'small-btn';
-          toggle.textContent = task.done ? 'Undo' : 'Done';
-          toggle.addEventListener('click', () => {
-            const updated = loadTasks().map(entry => (entry.id === task.id ? { ...entry, done: !entry.done } : entry));
-            saveTasks(updated);
-            renderTasks();
-          });
-
-          const remove = document.createElement('button');
-          remove.type = 'button';
-          remove.className = 'danger-btn';
-          remove.textContent = 'Delete';
-          remove.addEventListener('click', () => {
-            saveTasks(loadTasks().filter(entry => entry.id !== task.id));
-            renderTasks();
-          });
-
-          actions.appendChild(toggle);
-          actions.appendChild(remove);
-          row.appendChild(taskText);
-          row.appendChild(actions);
-          container.appendChild(row);
-        });
-      }
-
-      function saveTaskItem() {
-        const input = $('task-input-field');
-        if (!input) return;
-        const text = input.value.trim();
-
-        if (!text) {
-          setStatus('Reminder text is empty.');
-          safeSpeak('Reminder text is empty.');
-          return;
-        }
-
-        const tasks = loadTasks();
-        tasks.push({
-          id: Date.now() + '-' + Math.random().toString(16).slice(2),
-          text,
-          done: false
-        });
-
-        saveTasks(tasks);
-        renderTasks();
-        input.value = '';
-        setStatus('Reminder saved.');
-        safeSpeak('Reminder saved.');
-      }
-
-      function bindEvents() {
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-          btn.addEventListener('click', () => switchTab(btn.dataset.panel, btn));
-        });
-
-        const startBtn = $('start-btn');
-        if (startBtn) startBtn.addEventListener('click', startApplication);
-
-        const taskInput = $('task-input-field');
-        if (taskInput) {
-          taskInput.addEventListener('keydown', event => {
-            if (event.key === 'Enter') saveTaskItem();
-          });
-        }
-
-        const aiInput = $('ai-user-prompt');
-        if (aiInput) {
-          aiInput.addEventListener('keydown', event => {
-            if (event.key === 'Enter') triggerAIAssistant();
-          });
-        }
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        updateSplashClock();
-        updateBatteryStatus();
-        renderTasks();
-        setupCompass();
-        bindEvents();
-        setInterval(updateSplashClock, 1000);
-      });
-
-      window.addEventListener('load', () => updateBatteryStatus());
-      window.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') updateBatteryStatus();
-      });
-
-      window.safeSpeak = safeSpeak;
-      window.stopAudio = stopAudio;
-      window.startApplication = startApplication;
-      window.switchTab = switchTab;
-      window.handleFileOpen = function(event) {
-        const file = event.target.files && event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onerror = () => {
-          setStatus('Unable to read file.');
-          safeSpeak('Unable to read file.');
-        };
-
-        reader.onload = evt => {
-          const editor = $('text-editor-box');
-          if (editor) editor.value = String(evt.target.result || '');
-          setStatus('Loaded ' + file.name);
-          safeSpeak('Loaded successfully.');
-        };
-
-        reader.readAsText(file, 'UTF-8');
-      };
-
-      window.handlePhotoScan = function(event) {
-        const file = event.target.files && event.target.files[0];
-        if (!file) return;
-
-        const editor = $('text-editor-box');
-        if (editor) {
-          editor.value = '[Captured image: ' + file.name + ']\nImage added to the accessible_reader workspace.';
-        }
-        setStatus('Photo captured.');
-        safeSpeak('Photo captured and loaded.');
-      };
-
-      window.readWorkspaceText = readWorkspaceText;
-      window.copyWorkspaceText = copyWorkspaceText;
-      window.clearWorkspaceText = clearWorkspaceText;
-      window.triggerAIAssistant = triggerAIAssistant;
-      window.summarizeWorkspace = summarizeWorkspace;
-      window.clearAIOutput = clearAIOutput;
-      window.announceCompass = announceCompass;
-      window.calcKey = calcKey;
-      window.saveTaskItem = saveTaskItem;
-      window.announceTimeAndBattery = announceTimeAndBattery;
-    })();
-  </script>
-</body>
-</html>
+      <button id="btn-hub-read-status" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-semibold text-cyan-300">
+        🔊 Speak Hub
+      </button>
+    </div>
+
+    <!-- Core Feature Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 flex-1">
+      
+      <!-- Card 1: Reader & Text Editor -->
+      <button id="card-reader" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-amber-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-3xl mb-4 text-amber-400 group-hover:scale-110 transition-transform">
+            📄
+          </div>
+          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-amber-400">Reader & Text Editor</h3>
+          <p class="text-slate-300 text-sm leading-relaxed mb-4">
+            Read documents aloud, edit text in-place, capture photos for OCR text extraction, and adjust speech rates.
+          </p>
+        </div>
+        <div class="flex items-center justify-between text-xs font-semibold text-amber-400 pt-3 border-t border-slate-800">
+          <span>TTS, In-Place Editor & OCR</span>
+          <span class="text-lg">▶</span>
+        </div>
+      </button>
+
+      <!-- Card 2: AI Assistant -->
+      <button id="card-ai" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-cyan-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-3xl mb-4 text-cyan-400 group-hover:scale-110 transition-transform">
+            🤖
+          </div>
+          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-cyan-400">AI Assistant</h3>
+          <p class="text-slate-300 text-sm leading-relaxed mb-4">
+            Summarize documents, simplify complex language (ELI5), extract key points, and ask reading questions.
+          </p>
+        </div>
+        <div class="flex items-center justify-between text-xs font-semibold text-cyan-400 pt-3 border-t border-slate-800">
+          <span>Summary & Plain English</span>
+          <span class="text-lg">▶</span>
+        </div>
+      </button>
+
+      <!-- Card 3: Tactile Compass & Sensors -->
+      <button id="card-compass" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-emerald-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-3xl mb-4 text-emerald-400 group-hover:scale-110 transition-transform">
+            🧭
+          </div>
+          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-emerald-400">Tactile Compass & Sensors</h3>
+          <p class="text-slate-300 text-sm leading-relaxed mb-4">
+            Heading dial with haptic vibration feedback at cardinal directions, speech bearing, and tilt/level meters.
+          </p>
+        </div>
+        <div class="flex items-center justify-between text-xs font-semibold text-emerald-400 pt-3 border-t border-slate-800">
+          <span>Haptic Compass & Gyro</span>
+          <span class="text-lg">▶</span>
+        </div>
+      </button>
+
+      <!-- Card 4: Talking Calculator -->
+      <button id="card-calculator" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-purple-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-3xl mb-4 text-purple-400 group-hover:scale-110 transition-transform">
+            🔢
+          </div>
+          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-purple-400">Talking Calculator</h3>
+          <p class="text-slate-300 text-sm leading-relaxed mb-4">
+            High-contrast tactile keypad that speaks each digit pressed and reads full arithmetic calculations aloud.
+          </p>
+        </div>
+        <div class="flex items-center justify-between text-xs font-semibold text-purple-400 pt-3 border-t border-slate-800">
+          <span>Spoken Digits & History</span>
+          <span class="text-lg">▶</span>
+        </div>
+      </button>
+
+      <!-- Card 5: Daily Tools / Reminders -->
+      <button id="card-reminders" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-rose-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-3xl mb-4 text-rose-400 group-hover:scale-110 transition-transform">
+            ⏰
+          </div>
+          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-rose-400">Daily Tools & Reminders</h3>
+          <p class="text-slate-300 text-sm leading-relaxed mb-4">
+            Accessible agenda and task checklist with "Read All Reminders Aloud" and synthesized audio chime alerts.
+          </p>
+        </div>
+        <div class="flex it
