@@ -1,1 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Accessible Reader</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <!-- Tesseract.js CDN for Client-Side OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
+  <style>
+    /* Accessibility Base & Transitions */
+    * {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      min-height: 100vh;
+    }
+
+    /* High Contrast Themes */
+    .theme-dark {
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+    .theme-dark .panel-bg {
+      background-color: #1e293b;
+      border-color: #334155;
+    }
+    .theme-dark .card-hover:hover {
+      border-color: #38bdf8;
+    }
+
+    .theme-yellow {
+      background-color: #000000 !important;
+      color: #ffff00 !important;
+    }
+    .theme-yellow .panel-bg,
+    .theme-yellow .bg-slate-900,
+    .theme-yellow .bg-slate-800,
+    .theme-yellow .bg-slate-950 {
+      background-color: #121212 !important;
+      border-color: #ffff00 !important;
+      color: #ffff00 !important;
+    }
+    .theme-yellow button,
+    .theme-yellow input,
+    .theme-yellow select,
+    .theme-yellow textarea {
+      background-color: #000000 !important;
+      color: #ffff00 !important;
+      border-color: #ffff00 !important;
+    }
+    .theme-yellow .text-slate-400,
+    .theme-yellow .text-slate-300,
+    .theme-yellow .text-cyan-400,
+    .theme-yellow .text-amber-400 {
+      color: #ffff88 !important;
+    }
+
+    .theme-white {
+      background-color: #000000 !important;
+      color: #ffffff !important;
+    }
+    .theme-white .panel-bg,
+    .theme-white .bg-slate-900,
+    .theme-white .bg-slate-800,
+    .theme-white .bg-slate-950 {
+      background-color: #18181b !important;
+      border-color: #ffffff !important;
+      color: #ffffff !important;
+    }
+    .theme-white button,
+    .theme-white input,
+    .theme-white select,
+    .theme-white textarea {
+      background-color: #000000 !important;
+      color: #ffffff !important;
+      border-color: #ffffff !important;
+    }
+
+    .theme-light {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+    }
+    .theme-light .panel-bg,
+    .theme-light .bg-slate-900,
+    .theme-light .bg-slate-800,
+    .theme-light .bg-slate-950 {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    .theme-light button {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      border-color: #94a3b8;
+    }
+    .theme-light input,
+    .theme-light select,
+    .theme-light textarea {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #94a3b8 !important;
+    }
+
+    /* Font Scaling */
+    .font-scale-normal {
+      font-size: 16px;
+    }
+    .font-scale-large {
+      font-size: 19px;
+    }
+    .font-scale-xl {
+      font-size: 23px;
+    }
+
+    /* Dyslexic friendly reading styling */
+    .font-dyslexic {
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+      word-spacing: 0.15em;
+    }
+
+    /* Accessible Focus outlines */
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid #38bdf8 !important;
+      outline-offset: 2px !important;
+    }
+
+    /* Compass needle and dial animation */
+    #compass-needle {
+      transition: transform 0.15s cubic-bezier(0.1, 0.9, 0.2, 1);
+      transform-origin: center center;
+    }
+
+    /* Sentence highlight while TTS is speaking */
+    .sentence-active {
+      background-color: rgba(245, 158, 11, 0.35);
+      border-radius: 4px;
+      padding: 2px 4px;
+      outline: 2px solid #f59e0b;
+    }
+
+    /* Custom Scrollbar for Accessibility */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 5px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+  </style>
+</head>
+<body class="theme-dark font-scale-normal antialiased min-h-screen flex flex-col select-text">
+
+  <!-- Screen Reader Live Announcer -->
+  <div id="sr-announcer" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+  <!-- In-Page Toast Notification (Safe alternative to alert()) -->
+  <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 pointer-events-none w-11/12 max-w-md"></div>
+
+  <!-- In-Page Confirmation Modal (Safe alternative to confirm()) -->
+  <div id="confirm-modal" class="fixed inset-0 z-[110] bg-black/80 flex items-center justify-center p-4 hidden">
+    <div class="panel-bg bg-slate-900 border-2 border-amber-400 rounded-2xl p-6 w-full max-w-md shadow-2xl text-center">
+      <h3 id="confirm-modal-title" class="text-xl font-bold mb-3 text-amber-400">Confirmation</h3>
+      <p id="confirm-modal-message" class="text-slate-200 mb-6 text-base leading-relaxed"></p>
+      <div class="flex gap-4 justify-center">
+        <button id="confirm-modal-cancel" class="px-5 py-3 rounded-xl border border-slate-500 font-semibold text-slate-200 hover:bg-slate-800 min-w-[100px]">Cancel</button>
+        <button id="confirm-modal-ok" class="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 font-bold text-slate-950 min-w-[100px]">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 1. STARTUP SPLASH SCREEN                    -->
+  <!-- ========================================== -->
+  <section id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-between p-6 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-center select-none overflow-y-auto">
+    <!-- Top Branding & Date -->
+    <div class="w-full max-w-lg mt-4">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-500/50 text-cyan-300 text-sm font-medium mb-3">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        Accessible Reader v2.6 Ready
+      </div>
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-2">
+        Accessible <span class="text-amber-400">Reader</span>
+      </h1>
+      <p class="text-slate-300 text-base md:text-lg">
+        Empowering Low-Vision & Accessible Document Reading
+      </p>
+    </div>
+
+    <!-- Center Card: Live Date, Live Time & Developer Credit -->
+    <div class="w-full max-w-md my-auto py-4">
+      <div class="panel-bg bg-slate-900/90 border-2 border-slate-700/80 rounded-2xl p-6 shadow-2xl space-y-5 backdrop-blur-sm">
+        <!-- Live System Date -->
+        <div>
+          <div class="text-xs uppercase tracking-widest text-slate-400 font-semibold mb-1">Live System Date</div>
+          <div id="splash-date" class="text-xl md:text-2xl font-bold text-slate-100 py-1">Loading Date...</div>
+        </div>
+
+        <!-- Live System Time -->
+        <div class="bg-slate-950/70 rounded-xl p-4 border border-slate-800">
+          <div class="text-xs uppercase tracking-widest text-amber-400 font-semibold mb-1">Live System Time</div>
+          <div id="splash-time" class="text-3xl md:text-4xl font-mono font-black text-amber-400 tracking-wider">--:--:-- --</div>
+        </div>
+
+        <!-- Developer Credit (Prominently displayed) -->
+        <div class="p-3.5 bg-gradient-to-r from-amber-500/20 via-amber-400/10 to-amber-500/20 border-2 border-amber-400 rounded-xl">
+          <div class="text-xs text-amber-300/80 uppercase tracking-wider font-medium">Project Author</div>
+          <div class="text-xl font-black text-amber-300 tracking-wide">Developed by Saifulla</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Controls & Guaranteed Non-Freezing Next Button -->
+    <div class="w-full max-w-md space-y-4 mb-4">
+      <!-- Quick Accessibility Bar on Splash -->
+      <div class="flex items-center justify-around gap-2 p-2 bg-slate-900/80 rounded-xl border border-slate-800 text-xs text-slate-300">
+        <button id="splash-btn-contrast" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 font-medium">
+          🎨 Toggle Contrast
+        </button>
+        <button id="splash-btn-fontsize" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 font-medium">
+          🔍 Font Size
+        </button>
+        <button id="splash-btn-voice" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 font-medium">
+          🔊 Test Speech
+        </button>
+      </div>
+
+      <!-- Guaranteed Non-Freezing "Next ▶" Transition Button -->
+      <button id="btn-splash-next" onclick="enterMainHub()" class="w-full py-4 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-2xl tracking-wide shadow-xl flex items-center justify-center gap-3 transition-transform cursor-pointer border-2 border-amber-300" aria-label="Enter Accessible Reader Main Hub">
+        <span>Next ▶</span>
+        <span class="text-base font-bold bg-slate-950/20 px-3 py-1 rounded-full text-slate-900">Enter Hub</span>
+      </button>
+      <div class="text-xs text-slate-400">Tap Next or press Space / Enter on keyboard</div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 2. MAIN HUB & TABS NAVIGATION              -->
+  <!-- ========================================== -->
+  <main id="main-hub" class="hidden flex-1 flex flex-col p-4 md:p-6 max-w-5xl mx-auto w-full">
+    <!-- Hub Sticky Header Bar -->
+    <header class="panel-bg bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-amber-500 flex items-center justify-center text-slate-950 font-black text-2xl shadow">
+          📖
+        </div>
+        <div>
+          <h2 class="text-xl md:text-2xl font-black text-white leading-tight">Accessible Reader</h2>
+          <div class="text-xs text-amber-400 font-medium">Main Hub & Navigation • Saifulla</div>
+        </div>
+      </div>
+
+      <!-- Right Actions: GitHub Code Copy, Theme, Font, Sound & Settings -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button id="btn-quick-copy-github" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow" title="Copy clean index.html to paste straight into GitHub">
+          <span>📋 Copy Code for GitHub</span>
+        </button>
+        <div id="hub-clock-pill" class="hidden sm:block text-xs font-mono font-bold px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-amber-300">
+          --:--:--
+        </div>
+        <button id="btn-toggle-theme" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-semibold text-slate-200" title="Switch Theme (Dark, Yellow, White, Light)">
+          🎨 Theme
+        </button>
+        <button id="btn-toggle-fontsize" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-semibold text-slate-200" title="Adjust Text Size">
+          🔍 Size
+        </button>
+        <button id="btn-toggle-sound" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-semibold text-slate-200" title="Speech Voice Mute / Unmute">
+          🔊 Voice
+        </button>
+        <button id="btn-open-settings" class="p-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500 text-sm font-bold text-amber-300" title="App Settings & Export">
+          ⚙ Settings
+        </button>
+      </div>
+    </header>
+
+    <!-- Quick Tool Tabs Bar (Instant Navigation) -->
+    <nav class="flex gap-2 mb-6 overflow-x-auto pb-1" aria-label="Core Feature Tabs">
+      <button onclick="openWindow('window-reader')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-amber-500/20 border border-slate-700 hover:border-amber-400 text-slate-200 hover:text-amber-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
+        <span>📄 Reader & Editor</span>
+      </button>
+      <button onclick="openWindow('window-ai')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-cyan-500/20 border border-slate-700 hover:border-cyan-400 text-slate-200 hover:text-cyan-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
+        <span>🤖 AI Assistant</span>
+      </button>
+      <button onclick="openWindow('window-compass')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-emerald-500/20 border border-slate-700 hover:border-emerald-400 text-slate-200 hover:text-emerald-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
+        <span>🧭 Sensors & Compass</span>
+      </button>
+      <button onclick="openWindow('window-calculator')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-purple-500/20 border border-slate-700 hover:border-purple-400 text-slate-200 hover:text-purple-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
+        <span>🔢 Talking Calculator</span>
+      </button>
+      <button onclick="openWindow('window-reminders')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-rose-500/20 border border-slate-700 hover:border-rose-400 text-slate-200 hover:text-rose-300 font-bold text-sm whitespace-nowrap flex items-center gap-2">
+        <span>⏰ Daily Reminders</span>
+      </button>
+    </nav>
+
+    <!-- Welcome / Status Card -->
+    <div class="panel-bg bg-gradient-to-r from-slate-900 to-slate-850 border border-slate-800 rounded-2xl p-4 mb-6 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">✨</span>
+        <div>
+          <p class="text-sm font-bold text-slate-200">System Ready & Speech Active</p>
+          <p class="text-xs text-slate-400">Select any dedicated tool below. Press Android Back anytime to safely return here.</p>
+        </div>
+      </div>
+      <button id="btn-hub-read-status" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-semibold text-cyan-300">
+        🔊 Speak Hub
+      </button>
+    </div>
+
+    <!-- Core Feature Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 flex-1">
+      
+      <!-- Card 1: Reader & Text Editor -->
+      <button id="card-reader" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-amber-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-3xl mb-4 text-amber-400 group-hover:scale-110 transition-transform">
+            📄
+          </div>
+          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-amber-400">Reader & Text Editor</h3>
+          <p class="text-slate-300 text-sm leading-relaxed mb-4">
+            Read documents aloud, edit text in-place, capture photos for OCR text extraction, and adjust speech rates.
+          </p>
+        </div>
+        <div class="flex items-center justify-between text-xs font-semibold text-amber-400 pt-3 border-t border-slate-800">
+          <span>TTS, In-Place Editor & OCR</span>
+          <span class="text-lg">▶</span>
+        </div>
+      </button>
+
+      <!-- Card 2: AI Assistant -->
+      <button id="card-ai" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-cyan-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-3xl mb-4 text-cyan-400 group-hover:scale-110 transition-transform">
+            🤖
+          </div>
+          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-cyan-400">AI Assistant</h3>
+          <p class="text-slate-300 text-sm leading-relaxed mb-4">
+            Summarize documents, simplify complex language (ELI5), extract key points, and ask reading questions.
+          </p>
+        </div>
+        <div class="flex items-center justify-between text-xs font-semibold text-cyan-400 pt-3 border-t border-slate-800">
+          <span>Summary & Plain English</span>
+          <span class="text-lg">▶</span>
+        </div>
+      </button>
+
+      <!-- Card 3: Tactile Compass & Sensors -->
+      <button id="card-compass" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-emerald-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-3xl mb-4 text-emerald-400 group-hover:scale-110 transition-transform">
+            🧭
+          </div>
+          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-emerald-400">Tactile Compass & Sensors</h3>
+          <p class="text-slate-300 text-sm leading-relaxed mb-4">
+            Heading dial with haptic vibration feedback at cardinal directions, speech bearing, and tilt/level meters.
+          </p>
+        </div>
+        <div class="flex items-center justify-between text-xs font-semibold text-emerald-400 pt-3 border-t border-slate-800">
+          <span>Haptic Compass & Gyro</span>
+          <span class="text-lg">▶</span>
+        </div>
+      </button>
+
+      <!-- Card 4: Talking Calculator -->
+      <button id="card-calculator" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-purple-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-3xl mb-4 text-purple-400 group-hover:scale-110 transition-transform">
+            🔢
+          </div>
+          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-purple-400">Talking Calculator</h3>
+          <p class="text-slate-300 text-sm leading-relaxed mb-4">
+            High-contrast tactile keypad that speaks each digit pressed and reads full arithmetic calculations aloud.
+          </p>
+        </div>
+        <div class="flex items-center justify-between text-xs font-semibold text-purple-400 pt-3 border-t border-slate-800">
+          <span>Spoken Digits & History</span>
+          <span class="text-lg">▶</span>
+        </div>
+      </button>
+
+      <!-- Card 5: Daily Tools / Reminders -->
+      <button id="card-reminders" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-rose-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scale-98">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-3xl mb-4 text-rose-400 group-hover:scale-110 transition-transform">
+            ⏰
+          </div>
+          <h3 class="text-xl font-bold text-white mb-1 group-hover:text-rose-400">Daily Tools & Reminders</h3>
+          <p class="text-slate-300 text-sm leading-relaxed mb-4">
+            Accessible agenda and task checklist with "Read All Reminders Aloud" and synthesized audio chime alerts.
+          </p>
+        </div>
+        <div class="flex items-cent
