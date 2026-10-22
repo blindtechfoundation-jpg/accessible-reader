@@ -22,10 +22,10 @@
       min-height: 100vh;
     }
 
-    /* Offline & Core Layout Fallbacks */
+    /* Core Layout & Hidden Guarantee */
     .hidden { display: none !important; }
-    .flex { display: flex !important; }
-    .block { display: block !important; }
+    .flex { display: flex; }
+    .block { display: block; }
 
     /* High Contrast Themes */
     .theme-dark {
@@ -176,14 +176,14 @@
   <!-- In-Page Toast Notification (Safe alternative to alert()) -->
   <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 pointer-events-none w-11/12 max-w-md"></div>
 
-  <!-- In-Page Confirmation Modal (Safe alternative to confirm()) -->
-  <div id="confirm-modal" class="fixed inset-0 z-[110] bg-black/80 flex items-center justify-center p-4 hidden">
+  <!-- In-Page Confirmation Modal (Hidden by default with explicit display: none) -->
+  <div id="confirm-modal" class="fixed inset-0 z-[110] bg-black/80 items-center justify-center p-4 hidden" style="display: none;">
     <div class="panel-bg bg-slate-900 border-2 border-amber-400 rounded-2xl p-6 w-full max-w-md shadow-2xl text-center">
       <h3 id="confirm-modal-title" class="text-xl font-bold mb-3 text-amber-400">Confirmation</h3>
       <p id="confirm-modal-message" class="text-slate-200 mb-6 text-base leading-relaxed"></p>
       <div class="flex gap-4 justify-center">
-        <button id="confirm-modal-cancel" class="px-5 py-3 rounded-xl border border-slate-500 font-semibold text-slate-200 hover:bg-slate-800 min-w-[100px]">Cancel</button>
-        <button id="confirm-modal-ok" class="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 font-bold text-slate-950 min-w-[100px]">OK</button>
+        <button id="confirm-modal-cancel" onclick="closeConfirmModal()" class="px-5 py-3 rounded-xl border border-slate-500 font-semibold text-slate-200 hover:bg-slate-800 min-w-[100px]">Cancel</button>
+        <button id="confirm-modal-ok" onclick="closeConfirmModal()" class="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 font-bold text-slate-950 min-w-[100px]">OK</button>
       </div>
     </div>
   </div>
@@ -218,7 +218,7 @@
         <!-- Live System Time -->
         <div class="bg-slate-950/70 rounded-xl p-4 border border-slate-800">
           <div class="text-xs uppercase tracking-widest text-amber-400 font-semibold mb-1">Live System Time</div>
-          <div id="splash-time" class="text-3xl md:text-4xl font-mono font-black text-amber-400 tracking-wider">11:35:00 AM</div>
+          <div id="splash-time" class="text-3xl md:text-4xl font-mono font-black text-amber-400 tracking-wider">12:20:00 PM</div>
         </div>
 
         <!-- Developer Credit (Prominently displayed) -->
@@ -280,7 +280,7 @@
   <!-- ========================================== -->
   <!-- 2. MAIN HUB & TABS NAVIGATION              -->
   <!-- ========================================== -->
-  <main id="main-hub" class="hidden flex-1 flex flex-col p-4 md:p-6 max-w-5xl mx-auto w-full">
+  <main id="main-hub" class="hidden flex-1 flex flex-col p-4 md:p-6 max-w-5xl mx-auto w-full" style="display: none;">
     <!-- Hub Sticky Header Bar -->
     <header class="panel-bg bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3">
@@ -404,4 +404,4 @@
       </button>
 
       <!-- Card 4: Talking Calculator -->
-      <button id="card-calculator" onclick="openWindow('window-calculator')" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-purple-400 rounded-2xl p-5 text-left transition-all flex flex-col justify-between group shadow-lg active:scal
+      <button id="card-calculator" onclick="openWindow('window-calculator')" class="card-hover panel-bg bg-slate-900 border-2 border-slate-800 hover:border-purple-400 roun
